@@ -61,6 +61,7 @@ function Tabs() {
       </View>
 
       <Tab.Navigator
+        key={initialTab || "default"}
         initialRouteName={initialTab}
         screenOptions={({ route }) => ({
           headerShown: false,

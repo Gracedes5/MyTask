@@ -1,6 +1,6 @@
 // screens/AddTaskScreen.tsx
 import { Ionicons } from "@expo/vector-icons";
-import { CommonActions, useNavigation } from "@react-navigation/native";
+import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import React, { useEffect, useRef, useState } from "react";
@@ -95,12 +95,7 @@ export default function AddTaskScreen() {
 
   const goToUpcoming = () => {
     if (timerRef.current) clearTimeout(timerRef.current);
-    navigation.dispatch(
-      CommonActions.reset({
-        index: 0,
-        routes: [{ name: "Tabs", params: { screen: "Upcoming" } }],
-      }),
-    );
+    navigation.navigate("Tabs", { screen: "Upcoming" } as any);
   };
 
   return (
