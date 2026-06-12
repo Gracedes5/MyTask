@@ -14,7 +14,9 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import { C } from "../../constants/theme";
 import { Task, useTasks } from "../context/TaskContext";
+import { useTheme } from "../context/ThemeContext";
 
 const DAYS = [
   "Sunday",
@@ -57,11 +59,16 @@ type Section = { day: string; data: Task[] };
 
 export default function UpcomingScreen() {
   const { tasks, toggleDone, editTask, deleteTask } = useTasks();
+  const { colors, isDark } = useTheme();
+  const todayName = DAYS[new Date().getDay()];
 
   // useState for modal form (State management requirement)
   const [modalVisible, setModal] = useState(false);
   const [selected, setSelected] = useState<Task | null>(null);
-  const [actionTask, setActionTask] = useState<Task | null>(null);
+  const [actionTaskId, setActionTaskId] = useState<string | null>(null);
+  const actionTask = actionTaskId
+    ? (tasks.find((t) => t.id === actionTaskId) ?? null)
+    : null;
   const [eTitle, setETitle] = useState("");
   const [eDesc, setEDesc] = useState("");
   const [eDay, setEDay] = useState("");
@@ -99,18 +106,26 @@ export default function UpcomingScreen() {
   };
 
   return (
-    <SafeAreaView style={s.safe}>
+    <SafeAreaView style={[s.safe, { backgroundColor: colors.bg }]}>
       {/* ── Header ── */}
       <View style={s.header}>
-        <Text style={s.title}>Upcoming</Text>
+        <Text style={[s.title, { color: colors.text }]}>Upcoming</Text>
       </View>
 
       {/* ── FlatList with sections (Dynamic data display requirement) ── */}
       {sections.length === 0 ? (
         <View style={s.empty}>
-          <Ionicons name="calendar-outline" size={60} color="#2D1B4E" />
-          <Text style={s.emptyTitle}>No upcoming tasks</Text>
-          <Text style={s.emptySub}>Add tasks from the Today tab</Text>
+          <Ionicons
+            name="calendar-outline"
+            size={60}
+            color={colors.mutedLight}
+          />
+          <Text style={[s.emptyTitle, { color: colors.text }]}>
+            No upcoming tasks
+          </Text>
+          <Text style={[s.emptySub, { color: colors.muted }]}>
+            Add tasks from the Today tab
+          </Text>
         </View>
       ) : (
         <FlatList
@@ -118,89 +133,159 @@ export default function UpcomingScreen() {
           keyExtractor={(item) => item.day}
           contentContainerStyle={s.list}
           showsVerticalScrollIndicator={true}
-          renderItem={({ item }) => (
-            <View style={s.section}>
-              {/* Day divider */}
-              <View style={s.dayRow}>
-                <View style={s.dayLine} />
-                <Text style={s.dayName}>{dayLabel(item.day)}</Text>
-                <View style={s.dayLine} />
-              </View>
-
-              {/* Tasks for this day */}
-              {item.data.map((task) => (
-                <View key={task.id} style={[s.card, task.done && s.cardDone]}>
-                  <View style={[s.accent, task.done && s.accentDone]} />
-
-                  {/* Touchable checkbox (Interactive element requirement) */}
-                  <TouchableOpacity
-                    style={s.checkbox}
-                    onPress={() => setActionTask(task)}
-                    activeOpacity={0.7}
-                  >
-                    {task.done ? (
-                      <Ionicons
-                        name="checkmark-circle"
-                        size={22}
-                        color="#C084FC"
-                      />
-                    ) : (
-                      <Ionicons
-                        name="ellipse-outline"
-                        size={22}
-                        color="#4A3560"
-                      />
-                    )}
-                  </TouchableOpacity>
-
-                  <View style={s.cardBody}>
-                    <Text style={[s.cardTitle, task.done && s.cardTitleDone]}>
-                      {task.title}
-                    </Text>
-                    {task.description ? (
-                      <Text style={s.cardDesc}>{task.description}</Text>
-                    ) : null}
-                    {task.time ? (
-                      <Text style={s.cardTime}>⏰ {task.time}</Text>
-                    ) : null}
-                  </View>
-
-                  {/* Edit / Delete buttons (Interactive elements) */}
-                  <View style={s.actions}>
-                    <TouchableOpacity
-                      style={s.actBtn}
-                      onPress={() => openEdit(task)}
-                    >
-                      <Ionicons
-                        name="pencil-outline"
-                        size={15}
-                        color="#9D6FCA"
-                      />
-                    </TouchableOpacity>
-                    <TouchableOpacity
-                      style={s.actBtn}
-                      onPress={() => deleteTask(task.id)}
-                    >
-                      <Ionicons
-                        name="trash-outline"
-                        size={15}
-                        color="#F87171"
-                      />
-                    </TouchableOpacity>
-                  </View>
+          renderItem={({ item }) => {
+            const isToday = item.day === todayName;
+            return (
+              <View style={s.section}>
+                {/* Day divider */}
+                <View style={s.dayRow}>
+                  <View
+                    style={[s.dayLine, { backgroundColor: colors.border }]}
+                  />
+                  <Text style={[s.dayName, { color: colors.primary }]}>
+                    {dayLabel(item.day)}
+                  </Text>
+                  <View
+                    style={[s.dayLine, { backgroundColor: colors.border }]}
+                  />
                 </View>
-              ))}
-            </View>
-          )}
+
+                {/* Tasks for this day */}
+                {item.data.map((task) => (
+                  <View
+                    key={task.id}
+                    style={[
+                      isToday
+                        ? isDark
+                          ? s.cardTodayDark
+                          : s.cardToday
+                        : s.card,
+                      {
+                        backgroundColor: isToday
+                          ? isDark
+                            ? colors.card
+                            : "#F3EFFF"
+                          : colors.card,
+                        borderColor: isToday
+                          ? isDark
+                            ? colors.border
+                            : "#D8CCF0"
+                          : colors.border,
+                      },
+                      task.done &&
+                        (isToday
+                          ? isDark
+                            ? s.cardDoneTodayDark
+                            : s.cardDoneToday
+                          : s.cardDone),
+                    ]}
+                  >
+                    <View
+                      style={[
+                        isToday ? s.accentToday : s.accent,
+                        { backgroundColor: colors.primary },
+                        task.done &&
+                          (isToday
+                            ? { backgroundColor: colors.success }
+                            : s.accentDone),
+                      ]}
+                    />
+
+                    {/* Touchable checkbox (Interactive element requirement) */}
+                    <TouchableOpacity
+                      style={s.checkbox}
+                      onPress={() => setActionTaskId(task.id)}
+                      activeOpacity={0.7}
+                    >
+                      {task.done ? (
+                        <Ionicons
+                          name="checkmark-circle"
+                          size={22}
+                          color={isToday ? colors.success : colors.primary}
+                        />
+                      ) : (
+                        <Ionicons
+                          name="ellipse-outline"
+                          size={22}
+                          color={colors.muted}
+                        />
+                      )}
+                    </TouchableOpacity>
+
+                    <View style={s.cardBody}>
+                      <Text
+                        style={[
+                          s.cardTitle,
+                          { color: colors.text },
+                          task.done &&
+                            (isToday ? s.cardTitleDoneToday : s.cardTitleDone),
+                        ]}
+                      >
+                        {task.title}
+                      </Text>
+                      {task.description ? (
+                        <Text style={[s.cardDesc, { color: colors.muted }]}>
+                          {task.description}
+                        </Text>
+                      ) : null}
+                      {task.time ? (
+                        <Text style={[s.cardTime, { color: colors.muted }]}>
+                          ⏰ {task.time}
+                        </Text>
+                      ) : null}
+                    </View>
+
+                    {/* Edit / Delete buttons (Interactive elements) */}
+                    <View style={s.actions}>
+                      <TouchableOpacity
+                        style={s.actBtn}
+                        onPress={() => openEdit(task)}
+                      >
+                        <Ionicons
+                          name="pencil-outline"
+                          size={15}
+                          color={colors.muted}
+                        />
+                      </TouchableOpacity>
+                      <TouchableOpacity
+                        style={s.actBtn}
+                        onPress={() => deleteTask(task.id)}
+                      >
+                        <Ionicons
+                          name="trash-outline"
+                          size={15}
+                          color={colors.danger}
+                        />
+                      </TouchableOpacity>
+                    </View>
+                  </View>
+                ))}
+              </View>
+            );
+          }}
         />
       )}
 
       {/* ── Done count badge ── */}
       {doneCount > 0 && (
         <View style={s.badgeWrap}>
-          <View style={s.badge}>
-            <Ionicons name="checkmark-done-circle" size={16} color="#C084FC" />
-            <Text style={s.badgeTxt}>
+          <View
+            style={[
+              s.badge,
+              {
+                backgroundColor: isDark ? "#1A3020" : "#EEF8F0",
+                borderColor: isDark ? "#2D6A4F" : "#C8E6C9",
+              },
+            ]}
+          >
+            <Ionicons
+              name="checkmark-done-circle"
+              size={16}
+              color={colors.success}
+            />
+            <Text
+              style={[s.badgeTxt, { color: isDark ? "#4ADE80" : "#2D6A4F" }]}
+            >
               {doneCount} task{doneCount > 1 ? "s" : ""} completed
             </Text>
           </View>
@@ -218,35 +303,57 @@ export default function UpcomingScreen() {
           style={s.overlay}
           behavior={Platform.OS === "ios" ? "padding" : "height"}
         >
-          <View style={s.sheet}>
-            <View style={s.handle} />
-            <Text style={s.sheetTitle}>Edit Task</Text>
+          <View
+            style={[
+              s.sheet,
+              { backgroundColor: colors.card, borderColor: colors.border },
+            ]}
+          >
+            <View style={[s.handle, { backgroundColor: colors.mutedLight }]} />
+            <Text style={[s.sheetTitle, { color: colors.text }]}>
+              Edit Task
+            </Text>
 
             {/* Text inputs (Interactive element requirement) */}
-            <Text style={s.lbl}>TITLE</Text>
+            <Text style={[s.lbl, { color: colors.muted }]}>TITLE</Text>
             <TextInput
-              style={s.mInput}
+              style={[
+                s.mInput,
+                {
+                  backgroundColor: colors.bg,
+                  borderColor: colors.border,
+                  color: colors.text,
+                },
+              ]}
               value={eTitle}
               onChangeText={setETitle}
               placeholder="Task title"
-              placeholderTextColor="#4A3560"
-              selectionColor="#C084FC"
+              placeholderTextColor={colors.muted}
+              selectionColor={colors.primary}
             />
 
-            <Text style={s.lbl}>DESCRIPTION</Text>
+            <Text style={[s.lbl, { color: colors.muted }]}>DESCRIPTION</Text>
             <TextInput
-              style={[s.mInput, s.mInputTall]}
+              style={[
+                s.mInput,
+                s.mInputTall,
+                {
+                  backgroundColor: colors.bg,
+                  borderColor: colors.border,
+                  color: colors.text,
+                },
+              ]}
               value={eDesc}
               onChangeText={setEDesc}
               placeholder="Optional note"
-              placeholderTextColor="#4A3560"
+              placeholderTextColor={colors.muted}
               multiline
               numberOfLines={3}
               textAlignVertical="top"
-              selectionColor="#C084FC"
+              selectionColor={colors.primary}
             />
 
-            <Text style={s.lbl}>DAY</Text>
+            <Text style={[s.lbl, { color: colors.muted }]}>DAY</Text>
             <ScrollView
               horizontal
               showsHorizontalScrollIndicator={false}
@@ -256,33 +363,52 @@ export default function UpcomingScreen() {
               {DAYS.map((d) => (
                 <TouchableOpacity
                   key={d}
-                  style={[s.dc, eDay === d && s.dcOn]}
+                  style={[
+                    s.dc,
+                    { backgroundColor: colors.bg, borderColor: colors.border },
+                    eDay === d && { backgroundColor: colors.primary },
+                  ]}
                   onPress={() => setEDay(d)}
                 >
-                  <Text style={[s.dcTxt, eDay === d && s.dcTxtOn]}>
+                  <Text
+                    style={[
+                      s.dcTxt,
+                      { color: colors.muted },
+                      eDay === d && s.dcTxtOn,
+                    ]}
+                  >
                     {d.slice(0, 3)}
                   </Text>
                 </TouchableOpacity>
               ))}
             </ScrollView>
 
-            <Text style={s.lbl}>TIME</Text>
+            <Text style={[s.lbl, { color: colors.muted }]}>TIME</Text>
             <TouchableOpacity
-              style={s.timeRow}
+              style={[
+                s.timeRow,
+                { backgroundColor: colors.bg, borderColor: colors.border },
+              ]}
               onPress={() => setShowTimes(!showTimes)}
             >
               <Ionicons
                 name="time-outline"
                 size={16}
-                color={eTime ? "#C084FC" : "#6B5A8A"}
+                color={eTime ? colors.primary : colors.muted}
               />
-              <Text style={[s.timeTxt, !eTime && s.timePh]}>
+              <Text
+                style={[
+                  s.timeTxt,
+                  { color: colors.text },
+                  !eTime && { color: colors.muted },
+                ]}
+              >
                 {eTime || "Pick a time"}
               </Text>
               <Ionicons
                 name={showTimes ? "chevron-up" : "chevron-down"}
                 size={14}
-                color="#6B5A8A"
+                color={colors.muted}
               />
             </TouchableOpacity>
             {showTimes && (
@@ -290,13 +416,31 @@ export default function UpcomingScreen() {
                 {TIMES.map((t) => (
                   <TouchableOpacity
                     key={t}
-                    style={[s.ts, eTime === t && s.tsOn]}
+                    style={[
+                      s.ts,
+                      {
+                        backgroundColor: colors.bg,
+                        borderColor: colors.border,
+                      },
+                      eTime === t && {
+                        backgroundColor: colors.primary,
+                        borderColor: colors.primary,
+                      },
+                    ]}
                     onPress={() => {
                       setETime(t);
                       setShowTimes(false);
                     }}
                   >
-                    <Text style={[s.tsTxt, eTime === t && s.tsTxtOn]}>{t}</Text>
+                    <Text
+                      style={[
+                        s.tsTxt,
+                        { color: colors.muted },
+                        eTime === t && { color: C.white },
+                      ]}
+                    >
+                      {t}
+                    </Text>
                   </TouchableOpacity>
                 ))}
               </View>
@@ -305,13 +449,26 @@ export default function UpcomingScreen() {
             {/* Modal action buttons */}
             <View style={s.mActions}>
               <TouchableOpacity
-                style={s.cancelBtn}
+                style={[
+                  s.cancelBtn,
+                  {
+                    backgroundColor: colors.highlight,
+                    borderColor: colors.border,
+                  },
+                ]}
                 onPress={() => setModal(false)}
               >
-                <Text style={s.cancelTxt}>Cancel</Text>
+                <Text style={[s.cancelTxt, { color: colors.muted }]}>
+                  Cancel
+                </Text>
               </TouchableOpacity>
-              <TouchableOpacity style={s.saveBtn} onPress={saveEdit}>
-                <Text style={s.saveTxt}>Save Changes</Text>
+              <TouchableOpacity
+                style={[s.saveBtn, { backgroundColor: colors.primary }]}
+                onPress={saveEdit}
+              >
+                <Text style={[s.saveTxt, { color: C.white }]}>
+                  Save Changes
+                </Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -323,41 +480,84 @@ export default function UpcomingScreen() {
         visible={actionTask !== null}
         transparent
         animationType="fade"
-        onRequestClose={() => setActionTask(null)}
+        onRequestClose={() => setActionTaskId(null)}
       >
         <TouchableOpacity
           style={s.promptOverlay}
           activeOpacity={1}
-          onPress={() => setActionTask(null)}
+          onPress={() => setActionTaskId(null)}
         >
-          <SafeAreaView style={s.promptSheet}>
-            <View style={s.promptHandle} />
-            <Text style={s.promptTitle}>{actionTask?.title}</Text>
-            <Text style={s.promptSub}>Mark as done or delete this task</Text>
+          <SafeAreaView
+            style={[
+              s.promptSheet,
+              { backgroundColor: colors.card, borderColor: colors.border },
+            ]}
+          >
+            <View
+              style={[s.promptHandle, { backgroundColor: colors.mutedLight }]}
+            />
+            <Text style={[s.promptTitle, { color: colors.text }]}>
+              {actionTask?.title}
+            </Text>
+            <Text style={[s.promptSub, { color: colors.muted }]}>
+              {actionTask?.done
+                ? "Undo done or delete this task"
+                : "Mark as done or delete this task"}
+            </Text>
 
             <View style={s.promptRow}>
               <TouchableOpacity
-                style={[s.promptBtn, s.promptDelete]}
+                style={[
+                  s.promptBtn,
+                  s.promptDelete,
+                  {
+                    backgroundColor: colors.highlight,
+                    borderColor: colors.mutedLight,
+                  },
+                ]}
                 onPress={() => {
                   if (actionTask) deleteTask(actionTask.id);
-                  setActionTask(null);
+                  setActionTaskId(null);
                 }}
                 activeOpacity={0.8}
               >
-                <Ionicons name="trash-outline" size={18} color="#F87171" />
-                <Text style={s.promptDeleteTxt}>Delete</Text>
+                <Ionicons
+                  name="trash-outline"
+                  size={18}
+                  color={colors.danger}
+                />
+                <Text style={[s.promptDeleteTxt, { color: colors.danger }]}>
+                  Delete
+                </Text>
               </TouchableOpacity>
 
               <TouchableOpacity
-                style={[s.promptBtn, s.promptDone]}
+                style={[
+                  s.promptBtn,
+                  actionTask?.done ? s.promptUndo : s.promptDone,
+                  {
+                    backgroundColor: colors.primary,
+                    borderColor: colors.primary,
+                  },
+                ]}
                 onPress={() => {
                   if (actionTask) toggleDone(actionTask.id);
-                  setActionTask(null);
+                  setActionTaskId(null);
                 }}
                 activeOpacity={0.8}
               >
-                <Ionicons name="checkmark-circle-outline" size={18} color="#fff" />
-                <Text style={s.promptDoneTxt}>Done</Text>
+                <Ionicons
+                  name={
+                    actionTask?.done
+                      ? "arrow-undo-circle-outline"
+                      : "checkmark-circle-outline"
+                  }
+                  size={18}
+                  color={C.white}
+                />
+                <Text style={[s.promptDoneTxt, { color: C.white }]}>
+                  {actionTask?.done ? "Undo DONE" : "Done"}
+                </Text>
               </TouchableOpacity>
             </View>
           </SafeAreaView>
@@ -368,12 +568,11 @@ export default function UpcomingScreen() {
 }
 
 const s = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: "#0D0118" },
+  safe: { flex: 1 },
   header: { paddingHorizontal: 20, paddingTop: 18, paddingBottom: 8 },
   title: {
     fontSize: 26,
     fontWeight: "800",
-    color: "#EDE9FE",
     letterSpacing: -0.4,
   },
 
@@ -386,63 +585,89 @@ const s = StyleSheet.create({
   emptyTitle: {
     fontSize: 17,
     fontWeight: "700",
-    color: "#3B1F60",
     marginTop: 16,
   },
-  emptySub: { fontSize: 13, color: "#2D1B4E", marginTop: 6 },
+  emptySub: { fontSize: 13, marginTop: 6 },
 
   list: { paddingHorizontal: 18, paddingTop: 6, paddingBottom: 130 },
   section: { marginBottom: 18 },
 
   dayRow: { flexDirection: "row", alignItems: "center", marginBottom: 10 },
-  dayLine: { flex: 1, height: 1, backgroundColor: "#2D1B4E" },
+  dayLine: { flex: 1, height: 1 },
   dayName: {
     fontSize: 10,
     fontWeight: "700",
-    color: "#7C3AED",
     paddingHorizontal: 10,
     letterSpacing: 0.8,
     textTransform: "uppercase",
   },
 
   card: {
-    backgroundColor: "#160828",
     borderRadius: 14,
     padding: 13,
     marginBottom: 9,
     flexDirection: "row",
     alignItems: "flex-start",
     borderWidth: 1,
-    borderColor: "#2D1B4E",
     overflow: "hidden",
-    shadowColor: "#7C3AED",
+    shadowColor: "#8B5CF6",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 6,
     elevation: 3,
   },
   cardDone: { opacity: 0.5 },
+  cardToday: {
+    borderRadius: 14,
+    padding: 13,
+    marginBottom: 9,
+    flexDirection: "row",
+    alignItems: "flex-start",
+    borderWidth: 1,
+    overflow: "hidden",
+    shadowColor: "#8B5CF6",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 6,
+    elevation: 3,
+  },
+  cardTodayDark: {},
+  cardDoneToday: {
+    backgroundColor: "#EEF8F0",
+    borderColor: "#C8E6C9",
+  },
+  cardDoneTodayDark: {
+    backgroundColor: "#1A3020",
+    borderColor: "#2D6A4F",
+  },
   accent: {
     position: "absolute",
     left: 0,
     top: 0,
     bottom: 0,
     width: 3,
-    backgroundColor: "#7C3AED",
     borderRadius: 3,
   },
-  accentDone: { backgroundColor: "#3B1F60" },
+  accentDone: { opacity: 0.4 },
+  accentToday: {
+    position: "absolute",
+    left: 0,
+    top: 0,
+    bottom: 0,
+    width: 3,
+    borderRadius: 3,
+  },
   checkbox: { marginLeft: 8, marginRight: 10, marginTop: 1 },
   cardBody: { flex: 1 },
   cardTitle: {
     fontSize: 14,
     fontWeight: "600",
-    color: "#EDE9FE",
     lineHeight: 21,
   },
-  cardTitleDone: { textDecorationLine: "line-through", color: "#4A3560" },
-  cardDesc: { fontSize: 12, color: "#6B5A8A", marginTop: 3 },
-  cardTime: { fontSize: 11, color: "#9D6FCA", marginTop: 5 },
+  cardTitleDone: { textDecorationLine: "line-through", color: "#8B7EB8" },
+  cardTitleDoneToday: { textDecorationLine: "line-through", color: "#6B9B78" },
+  cardDesc: { fontSize: 12, marginTop: 3 },
+  cardTime: { fontSize: 11, marginTop: 5 },
   actions: { flexDirection: "row", gap: 2, marginLeft: 6 },
   actBtn: { padding: 6, borderRadius: 8 },
 
@@ -457,37 +682,32 @@ const s = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     gap: 6,
-    backgroundColor: "#1E0A35",
     borderRadius: 30,
     paddingHorizontal: 16,
     paddingVertical: 8,
     borderWidth: 1,
-    borderColor: "#3B1F60",
-    shadowColor: "#7C3AED",
+    shadowColor: "#32C671",
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
     shadowRadius: 10,
     elevation: 6,
   },
-  badgeTxt: { fontSize: 12, fontWeight: "700", color: "#C084FC" },
+  badgeTxt: { fontSize: 12, fontWeight: "700" },
 
   overlay: {
     flex: 1,
     justifyContent: "flex-end",
-    backgroundColor: "rgba(0,0,0,0.72)",
+    backgroundColor: "rgba(0,0,0,0.3)",
   },
   sheet: {
-    backgroundColor: "#160828",
     borderTopLeftRadius: 26,
     borderTopRightRadius: 26,
     padding: 22,
     borderTopWidth: 1,
-    borderColor: "#2D1B4E",
   },
   handle: {
     width: 38,
     height: 4,
-    backgroundColor: "#3B1F60",
     borderRadius: 2,
     alignSelf: "center",
     marginBottom: 18,
@@ -495,25 +715,20 @@ const s = StyleSheet.create({
   sheetTitle: {
     fontSize: 19,
     fontWeight: "800",
-    color: "#EDE9FE",
     marginBottom: 18,
   },
 
   lbl: {
     fontSize: 10,
     fontWeight: "700",
-    color: "#9D6FCA",
     letterSpacing: 0.8,
     marginBottom: 7,
   },
   mInput: {
-    backgroundColor: "#0D0118",
     borderWidth: 1,
-    borderColor: "#2D1B4E",
     borderRadius: 11,
     paddingHorizontal: 13,
     paddingVertical: 11,
-    color: "#EDE9FE",
     fontSize: 14,
     marginBottom: 14,
   },
@@ -523,27 +738,21 @@ const s = StyleSheet.create({
     paddingHorizontal: 14,
     paddingVertical: 8,
     borderRadius: 10,
-    backgroundColor: "#0D0118",
     borderWidth: 1,
-    borderColor: "#2D1B4E",
   },
-  dcOn: { backgroundColor: "#7C3AED", borderColor: "#9D4FEF" },
-  dcTxt: { fontSize: 12, fontWeight: "700", color: "#6B5A8A" },
-  dcTxtOn: { color: "#fff" },
+  dcTxt: { fontSize: 12, fontWeight: "700" },
+  dcTxtOn: { color: C.white },
 
   timeRow: {
     flexDirection: "row",
     alignItems: "center",
     gap: 8,
-    backgroundColor: "#0D0118",
     borderRadius: 10,
     padding: 11,
     borderWidth: 1,
-    borderColor: "#2D1B4E",
     marginBottom: 4,
   },
-  timeTxt: { flex: 1, fontSize: 13, fontWeight: "600", color: "#EDE9FE" },
-  timePh: { color: "#4A3560" },
+  timeTxt: { flex: 1, fontSize: 13, fontWeight: "600" },
   timeGrid: {
     flexDirection: "row",
     flexWrap: "wrap",
@@ -555,57 +764,47 @@ const s = StyleSheet.create({
     paddingHorizontal: 10,
     paddingVertical: 7,
     borderRadius: 8,
-    backgroundColor: "#0D0118",
     borderWidth: 1,
-    borderColor: "#2D1B4E",
   },
-  tsOn: { backgroundColor: "#5B21B6", borderColor: "#7C3AED" },
-  tsTxt: { fontSize: 10, fontWeight: "600", color: "#6B5A8A" },
-  tsTxtOn: { color: "#fff" },
+  tsTxt: { fontSize: 10, fontWeight: "600" },
 
   mActions: { flexDirection: "row", gap: 10, marginTop: 14 },
   cancelBtn: {
     flex: 1,
     paddingVertical: 13,
     borderRadius: 12,
-    backgroundColor: "#1E0A35",
     borderWidth: 1,
-    borderColor: "#2D1B4E",
     alignItems: "center",
   },
-  cancelTxt: { color: "#9D6FCA", fontSize: 14, fontWeight: "700" },
+  cancelTxt: { fontSize: 14, fontWeight: "700" },
   saveBtn: {
     flex: 2,
     paddingVertical: 13,
     borderRadius: 12,
-    backgroundColor: "#7C3AED",
     alignItems: "center",
-    shadowColor: "#7C3AED",
+    shadowColor: "#8B5CF6",
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.4,
     shadowRadius: 8,
     elevation: 6,
   },
-  saveTxt: { color: "#fff", fontSize: 14, fontWeight: "700" },
+  saveTxt: { fontSize: 14, fontWeight: "700" },
 
   promptOverlay: {
     flex: 1,
-    backgroundColor: "rgba(0,0,0,0.6)",
+    backgroundColor: "rgba(0,0,0,0.3)",
     justifyContent: "flex-end",
   },
   promptSheet: {
-    backgroundColor: "#160828",
     borderTopLeftRadius: 26,
     borderTopRightRadius: 26,
     borderTopWidth: 1,
-    borderColor: "#2D1B4E",
     padding: 22,
     paddingBottom: 36,
   },
   promptHandle: {
     width: 38,
     height: 4,
-    backgroundColor: "#3B1F60",
     borderRadius: 2,
     alignSelf: "center",
     marginBottom: 18,
@@ -613,12 +812,10 @@ const s = StyleSheet.create({
   promptTitle: {
     fontSize: 16,
     fontWeight: "700",
-    color: "#EDE9FE",
     marginBottom: 4,
   },
   promptSub: {
     fontSize: 12,
-    color: "#6B5A8A",
     marginBottom: 20,
   },
   promptRow: {
@@ -635,19 +832,20 @@ const s = StyleSheet.create({
     borderRadius: 12,
     borderWidth: 1,
   },
-  promptDelete: {
-    backgroundColor: "#1E0A35",
-    borderColor: "#3B1F60",
-  },
+  promptDelete: {},
   promptDeleteTxt: {
     fontSize: 14,
     fontWeight: "700",
-    color: "#F87171",
+  },
+  promptUndo: {
+    shadowColor: "#8B5CF6",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.4,
+    shadowRadius: 8,
+    elevation: 6,
   },
   promptDone: {
-    backgroundColor: "#7C3AED",
-    borderColor: "#9D4FEF",
-    shadowColor: "#7C3AED",
+    shadowColor: "#8B5CF6",
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.4,
     shadowRadius: 8,
@@ -656,6 +854,5 @@ const s = StyleSheet.create({
   promptDoneTxt: {
     fontSize: 14,
     fontWeight: "700",
-    color: "#fff",
   },
 });

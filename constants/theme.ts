@@ -1,53 +1,61 @@
-/**
- * Below are the colors that are used in the app. The colors are defined in the light and dark mode.
- * There are many other ways to style your app. For example, [Nativewind](https://www.nativewind.dev/), [Tamagui](https://tamagui.dev/), [unistyles](https://reactnativeunistyles.vercel.app), etc.
- */
+export type ColorSet = {
+  primary: string;
+  bg: string;
+  card: string;
+  text: string;
+  success: string;
+  warning: string;
+  danger: string;
+  border: string;
+  muted: string;
+  mutedLight: string;
+  highlight: string;
+  white: string;
+};
 
-import { Platform } from 'react-native';
+export const C: ColorSet = {
+  primary: "#8B5CF6",
+  bg: "#F6F2FF",
+  card: "#FFFFFF",
+  text: "#1E1B2E",
+  success: "#32C671",
+  warning: "#FFB84D",
+  danger: "#FF6B6B",
+  border: "#E8E0F7",
+  muted: "#8B7EB8",
+  mutedLight: "#D0C4F0",
+  highlight: "#F0ECFF",
+  white: "#FFFFFF",
+};
 
-const tintColorLight = '#0a7ea4';
-const tintColorDark = '#fff';
+export const DARK: ColorSet = {
+  primary: "#A78BFA",
+  bg: "#0F0D1A",
+  card: "#1A1730",
+  text: "#E8E0F7",
+  success: "#4ADE80",
+  warning: "#FBBF24",
+  danger: "#FF6B6B",
+  border: "#2E2848",
+  muted: "#9A8EBA",
+  mutedLight: "#4A3E6A",
+  highlight: "#221A3A",
+  white: "#FFFFFF",
+};
 
 export const Colors = {
   light: {
-    text: '#11181C',
-    background: '#fff',
-    tint: tintColorLight,
-    icon: '#687076',
-    tabIconDefault: '#687076',
-    tabIconSelected: tintColorLight,
+    text: C.text,
+    background: C.bg,
+    icon: C.primary,
+    tabIconDefault: C.muted,
+    tabIconSelected: C.primary,
   },
   dark: {
-    text: '#ECEDEE',
-    background: '#151718',
-    tint: tintColorDark,
-    icon: '#9BA1A6',
-    tabIconDefault: '#9BA1A6',
-    tabIconSelected: tintColorDark,
+    text: DARK.text,
+    background: DARK.bg,
+    icon: DARK.primary,
+    tabIconDefault: DARK.muted,
+    tabIconSelected: DARK.primary,
   },
 };
-
-export const Fonts = Platform.select({
-  ios: {
-    /** iOS `UIFontDescriptorSystemDesignDefault` */
-    sans: 'system-ui',
-    /** iOS `UIFontDescriptorSystemDesignSerif` */
-    serif: 'ui-serif',
-    /** iOS `UIFontDescriptorSystemDesignRounded` */
-    rounded: 'ui-rounded',
-    /** iOS `UIFontDescriptorSystemDesignMonospaced` */
-    mono: 'ui-monospace',
-  },
-  default: {
-    sans: 'normal',
-    serif: 'serif',
-    rounded: 'normal',
-    mono: 'monospace',
-  },
-  web: {
-    sans: "system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif",
-    serif: "Georgia, 'Times New Roman', serif",
-    rounded: "'SF Pro Rounded', 'Hiragino Maru Gothic ProN', Meiryo, 'MS PGothic', sans-serif",
-    mono: "SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace",
-  },
-});

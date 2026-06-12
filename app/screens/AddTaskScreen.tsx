@@ -2,7 +2,6 @@
 import { Ionicons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
 import React, { useEffect, useRef, useState } from "react";
 import {
   Animated,
@@ -15,8 +14,11 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { C } from "../../constants/theme";
 import type { RootStackParamList } from "../App";
 import { useTasks } from "../context/TaskContext";
+import { useTheme } from "../context/ThemeContext";
 
 const DAYS = [
   "Sunday",
@@ -53,6 +55,7 @@ export default function AddTaskScreen() {
   const insets = useSafeAreaInsets();
   const navigation = useNavigation<Nav>();
   const { addTask } = useTasks();
+  const { colors } = useTheme();
   const todayName = DAYS[new Date().getDay()];
 
   // useState for every form field (State management requirement)
@@ -83,7 +86,7 @@ export default function AddTaskScreen() {
         if (timerRef.current) clearTimeout(timerRef.current);
       };
     }
-  }, [saved]);
+  }, [saved, navigation, slideAnim]);
 
   const canSave = title.trim().length > 0;
 
@@ -94,67 +97,91 @@ export default function AddTaskScreen() {
   };
 
   const goToUpcoming = () => {
-    if (timerRef.current) clearTimeout(timerRef.current);
-    navigation.navigate("Tabs", { screen: "Upcoming" } as any);
+    console.log("View in Upcoming pressed");
+    if (timerRef.current) {
+      clearTimeout(timerRef.current);
+    }
+    navigation.replace("Tabs", { screen: "Upcoming" });
   };
-
   return (
-    <View style={[s.safe, { paddingTop: insets.top }]}>
+    <View
+      style={[s.safe, { paddingTop: insets.top, backgroundColor: colors.bg }]}
+    >
       <KeyboardAvoidingView
         style={{ flex: 1 }}
         behavior={Platform.OS === "ios" ? "padding" : "height"}
       >
         {/* ── Header ── */}
-        <View style={s.header}>
+        <View style={[s.header, { borderBottomColor: colors.highlight }]}>
           {/* Close button (Interactive element) */}
           <TouchableOpacity
             onPress={() => navigation.goBack()}
             style={s.closeBtn}
           >
-            <Ionicons name="close" size={22} color="#A78BCA" />
+            <Ionicons name="close" size={22} color={colors.muted} />
           </TouchableOpacity>
-          <Text style={s.headerTitle}>New Task</Text>
+          <Text style={[s.headerTitle, { color: colors.text }]}>New Task</Text>
           <TouchableOpacity
-            style={[s.saveTopBtn, !canSave && s.saveTopBtnOff]}
+            style={[
+              s.saveTopBtn,
+              { backgroundColor: colors.primary },
+              !canSave && { backgroundColor: colors.mutedLight },
+            ]}
             onPress={handleSave}
             disabled={!canSave}
           >
-            <Text style={[s.saveTopTxt, !canSave && s.saveTopTxtOff]}>
+            <Text
+              style={[
+                s.saveTopTxt,
+                { color: C.white },
+                !canSave && { color: colors.muted },
+              ]}
+            >
               Save
             </Text>
           </TouchableOpacity>
         </View>
 
         <ScrollView
-          contentContainerStyle={s.scroll}
+          contentContainerStyle={[s.scroll]}
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={true}
         >
           {/* ── Task title (Text input requirement) ── */}
-          <View style={s.card}>
-            <Text style={s.lbl}>TASK TITLE *</Text>
+          <View
+            style={[
+              s.card,
+              { backgroundColor: colors.card, borderColor: colors.border },
+            ]}
+          >
+            <Text style={[s.lbl, { color: colors.muted }]}>TASK TITLE *</Text>
             <TextInput
-              style={s.titleInput}
+              style={[s.titleInput, { color: colors.text }]}
               value={title}
               onChangeText={setTitle}
               placeholder="What needs to be done?"
-              placeholderTextColor="#4A3560"
-              selectionColor="#C084FC"
+              placeholderTextColor={colors.muted}
+              selectionColor={colors.primary}
               autoFocus
               editable={!saved}
             />
           </View>
 
           {/* ── Description (Text input requirement) ── */}
-          <View style={s.card}>
-            <Text style={s.lbl}>DESCRIPTION</Text>
+          <View
+            style={[
+              s.card,
+              { backgroundColor: colors.card, borderColor: colors.border },
+            ]}
+          >
+            <Text style={[s.lbl, { color: colors.muted }]}>DESCRIPTION</Text>
             <TextInput
-              style={s.descInput}
+              style={[s.descInput, { color: colors.muted }]}
               value={desc}
               onChangeText={setDesc}
               placeholder="Add a note (optional)"
-              placeholderTextColor="#4A3560"
-              selectionColor="#C084FC"
+              placeholderTextColor={colors.muted}
+              selectionColor={colors.primary}
               multiline
               numberOfLines={3}
               textAlignVertical="top"
@@ -163,8 +190,13 @@ export default function AddTaskScreen() {
           </View>
 
           {/* ── Day selector (Touchable area requirement) ── */}
-          <View style={s.card}>
-            <Text style={s.lbl}>SCHEDULE FOR</Text>
+          <View
+            style={[
+              s.card,
+              { backgroundColor: colors.card, borderColor: colors.border },
+            ]}
+          >
+            <Text style={[s.lbl, { color: colors.muted }]}>SCHEDULE FOR</Text>
             <ScrollView
               horizontal
               showsHorizontalScrollIndicator={false}
@@ -173,25 +205,50 @@ export default function AddTaskScreen() {
               {DAYS.map((d) => (
                 <TouchableOpacity
                   key={d}
-                  style={[s.dc, day === d && s.dcOn]}
+                  style={[
+                    s.dc,
+                    { backgroundColor: colors.bg, borderColor: colors.border },
+                    day === d && {
+                      backgroundColor: colors.primary,
+                      borderColor: colors.mutedLight,
+                    },
+                  ]}
                   onPress={() => setDay(d)}
                   activeOpacity={0.75}
                   disabled={saved}
                 >
-                  <Text style={[s.dcTxt, day === d && s.dcTxtOn]}>
+                  <Text
+                    style={[
+                      s.dcTxt,
+                      { color: colors.muted },
+                      day === d && { color: C.white },
+                    ]}
+                  >
                     {d.slice(0, 3)}
                   </Text>
-                  {d === todayName && <View style={s.todayDot} />}
+                  {d === todayName && (
+                    <View
+                      style={[s.todayDot, { backgroundColor: colors.primary }]}
+                    />
+                  )}
                 </TouchableOpacity>
               ))}
             </ScrollView>
           </View>
 
           {/* ── Time picker (Touchable area requirement) ── */}
-          <View style={s.card}>
-            <Text style={s.lbl}>TIME</Text>
+          <View
+            style={[
+              s.card,
+              { backgroundColor: colors.card, borderColor: colors.border },
+            ]}
+          >
+            <Text style={[s.lbl, { color: colors.muted }]}>TIME</Text>
             <TouchableOpacity
-              style={s.timeRow}
+              style={[
+                s.timeRow,
+                { backgroundColor: colors.bg, borderColor: colors.border },
+              ]}
               onPress={() => setShowTimes(!showTimes)}
               activeOpacity={0.8}
               disabled={saved}
@@ -199,15 +256,21 @@ export default function AddTaskScreen() {
               <Ionicons
                 name="time-outline"
                 size={17}
-                color={time ? "#C084FC" : "#6B5A8A"}
+                color={time ? colors.primary : colors.muted}
               />
-              <Text style={[s.timeTxt, !time && s.timePh]}>
+              <Text
+                style={[
+                  s.timeTxt,
+                  { color: colors.text },
+                  !time && { color: colors.muted },
+                ]}
+              >
                 {time || "Pick a time"}
               </Text>
               <Ionicons
                 name={showTimes ? "chevron-up" : "chevron-down"}
                 size={15}
-                color="#6B5A8A"
+                color={colors.muted}
               />
             </TouchableOpacity>
             {showTimes && (
@@ -215,7 +278,17 @@ export default function AddTaskScreen() {
                 {TIMES.map((t) => (
                   <TouchableOpacity
                     key={t}
-                    style={[s.ts, time === t && s.tsOn]}
+                    style={[
+                      s.ts,
+                      {
+                        backgroundColor: colors.bg,
+                        borderColor: colors.border,
+                      },
+                      time === t && {
+                        backgroundColor: colors.primary,
+                        borderColor: colors.primary,
+                      },
+                    ]}
                     onPress={() => {
                       setTime(t);
                       setShowTimes(false);
@@ -223,7 +296,15 @@ export default function AddTaskScreen() {
                     activeOpacity={0.75}
                     disabled={saved}
                   >
-                    <Text style={[s.tsTxt, time === t && s.tsTxtOn]}>{t}</Text>
+                    <Text
+                      style={[
+                        s.tsTxt,
+                        { color: colors.muted },
+                        time === t && { color: C.white },
+                      ]}
+                    >
+                      {t}
+                    </Text>
                   </TouchableOpacity>
                 ))}
               </View>
@@ -232,29 +313,45 @@ export default function AddTaskScreen() {
 
           {/* ── Live preview summary ── */}
           {canSave && !saved && (
-            <View style={s.summary}>
-              <View style={s.summaryDot} />
+            <View
+              style={[
+                s.summary,
+                {
+                  backgroundColor: colors.highlight,
+                  borderColor: colors.mutedLight,
+                },
+              ]}
+            >
+              <View
+                style={[s.summaryDot, { backgroundColor: colors.primary }]}
+              />
               <View style={{ flex: 1 }}>
-                <Text style={s.summaryTitle}>{title}</Text>
-                <Text style={s.summaryMeta}>
+                <Text style={[s.summaryTitle, { color: colors.text }]}>
+                  {title}
+                </Text>
+                <Text style={[s.summaryMeta, { color: colors.muted }]}>
                   {day}
                   {time ? `  ·  ${time}` : ""}
                 </Text>
               </View>
-              <Ionicons name="sparkles" size={15} color="#C084FC" />
+              <Ionicons name="sparkles" size={15} color={colors.primary} />
             </View>
           )}
 
           {/* ── Add Task button (Button requirement) ── */}
           {!saved && (
             <TouchableOpacity
-              style={[s.addBtn, !canSave && s.addBtnOff]}
+              style={[
+                s.addBtn,
+                { backgroundColor: colors.primary },
+                !canSave && { backgroundColor: colors.mutedLight },
+              ]}
               onPress={handleSave}
               disabled={!canSave}
               activeOpacity={0.85}
             >
-              <Ionicons name="add-circle-outline" size={19} color="#fff" />
-              <Text style={s.addBtnTxt}>Add Task</Text>
+              <Ionicons name="add-circle-outline" size={19} color={C.white} />
+              <Text style={[s.addBtnTxt, { color: C.white }]}>Add Task</Text>
             </TouchableOpacity>
           )}
         </ScrollView>
@@ -262,21 +359,43 @@ export default function AddTaskScreen() {
         {/* ── Saved toast ── */}
         {saved && (
           <Animated.View
-            style={[s.toast, { transform: [{ translateY: slideAnim }] }]}
+            style={[
+              s.toast,
+              {
+                backgroundColor: colors.highlight,
+                borderColor: colors.mutedLight,
+                transform: [{ translateY: slideAnim }],
+              },
+            ]}
           >
             <View style={s.toastIcon}>
-              <Ionicons name="checkmark-circle" size={22} color="#C084FC" />
+              <Ionicons
+                name="checkmark-circle"
+                size={22}
+                color={colors.success}
+              />
             </View>
             <View style={s.toastBody}>
-              <Text style={s.toastTitle}>Task saved!</Text>
-              <Text style={s.toastSub}>
+              <Text style={[s.toastTitle, { color: colors.text }]}>
+                Task saved!
+              </Text>
+              <Text style={[s.toastSub, { color: colors.muted }]}>
                 Scheduled for {day}
                 {time ? ` at ${time}` : ""}
               </Text>
             </View>
-            <TouchableOpacity style={s.toastAction} onPress={goToUpcoming}>
-              <Text style={s.toastActionTxt}>View in Upcoming</Text>
-              <Ionicons name="chevron-forward" size={14} color="#C084FC" />
+            <TouchableOpacity
+              style={[s.toastAction, { backgroundColor: colors.border }]}
+              onPress={goToUpcoming}
+            >
+              <Text style={[s.toastActionTxt, { color: colors.primary }]}>
+                View in Upcoming
+              </Text>
+              <Ionicons
+                name="chevron-forward"
+                size={14}
+                color={colors.primary}
+              />
             </TouchableOpacity>
           </Animated.View>
         )}
@@ -286,7 +405,7 @@ export default function AddTaskScreen() {
 }
 
 const s = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: "#0D0118" },
+  safe: { flex: 1 },
   header: {
     flexDirection: "row",
     alignItems: "center",
@@ -295,44 +414,36 @@ const s = StyleSheet.create({
     paddingTop: 14,
     paddingBottom: 12,
     borderBottomWidth: 1,
-    borderBottomColor: "#1E0A35",
   },
   closeBtn: { padding: 4 },
-  headerTitle: { fontSize: 16, fontWeight: "700", color: "#EDE9FE" },
+  headerTitle: { fontSize: 16, fontWeight: "700" },
   saveTopBtn: {
-    backgroundColor: "#7C3AED",
     paddingHorizontal: 16,
     paddingVertical: 8,
     borderRadius: 10,
   },
-  saveTopBtnOff: { backgroundColor: "#2D1B4E" },
-  saveTopTxt: { color: "#fff", fontWeight: "700", fontSize: 13 },
-  saveTopTxtOff: { color: "#4A3560" },
+  saveTopTxt: { fontWeight: "700", fontSize: 13 },
 
   scroll: { padding: 18, paddingBottom: 50 },
   card: {
-    backgroundColor: "#160828",
     borderRadius: 16,
     padding: 15,
     marginBottom: 12,
     borderWidth: 1,
-    borderColor: "#2D1B4E",
   },
   lbl: {
     fontSize: 10,
     fontWeight: "700",
-    color: "#9D6FCA",
     letterSpacing: 0.8,
     marginBottom: 10,
   },
   titleInput: {
     fontSize: 17,
     fontWeight: "600",
-    color: "#EDE9FE",
     padding: 0,
     lineHeight: 24,
   },
-  descInput: { fontSize: 14, color: "#C4B5E0", padding: 0, height: 68 },
+  descInput: { fontSize: 14, padding: 0, height: 68 },
 
   dayRow: { gap: 8, paddingVertical: 2 },
   dc: {
@@ -340,28 +451,15 @@ const s = StyleSheet.create({
     paddingHorizontal: 14,
     paddingVertical: 10,
     borderRadius: 12,
-    backgroundColor: "#0D0118",
     borderWidth: 1,
-    borderColor: "#2D1B4E",
     minWidth: 52,
     position: "relative",
   },
-  dcOn: {
-    backgroundColor: "#7C3AED",
-    borderColor: "#9D4FEF",
-    shadowColor: "#7C3AED",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.4,
-    shadowRadius: 8,
-    elevation: 6,
-  },
-  dcTxt: { fontSize: 11, fontWeight: "700", color: "#6B5A8A" },
-  dcTxtOn: { color: "#fff" },
+  dcTxt: { fontSize: 11, fontWeight: "700" },
   todayDot: {
     width: 5,
     height: 5,
     borderRadius: 3,
-    backgroundColor: "#C084FC",
     position: "absolute",
     top: 5,
     right: 7,
@@ -371,63 +469,51 @@ const s = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     gap: 9,
-    backgroundColor: "#0D0118",
     borderRadius: 10,
     padding: 11,
     borderWidth: 1,
-    borderColor: "#2D1B4E",
   },
-  timeTxt: { flex: 1, fontSize: 14, fontWeight: "600", color: "#EDE9FE" },
-  timePh: { color: "#4A3560" },
+  timeTxt: { flex: 1, fontSize: 14, fontWeight: "600" },
   timeGrid: { flexDirection: "row", flexWrap: "wrap", gap: 7, marginTop: 12 },
   ts: {
     paddingHorizontal: 10,
     paddingVertical: 7,
     borderRadius: 9,
-    backgroundColor: "#0D0118",
     borderWidth: 1,
-    borderColor: "#2D1B4E",
   },
-  tsOn: { backgroundColor: "#5B21B6", borderColor: "#7C3AED" },
-  tsTxt: { fontSize: 11, fontWeight: "600", color: "#6B5A8A" },
-  tsTxtOn: { color: "#fff" },
+  tsTxt: { fontSize: 11, fontWeight: "600" },
 
   summary: {
     flexDirection: "row",
     alignItems: "center",
     gap: 10,
-    backgroundColor: "#1E0A35",
     borderRadius: 14,
     padding: 14,
     marginBottom: 12,
     borderWidth: 1,
-    borderColor: "#3B1F60",
   },
   summaryDot: {
     width: 8,
     height: 8,
     borderRadius: 4,
-    backgroundColor: "#C084FC",
   },
-  summaryTitle: { fontSize: 13, fontWeight: "700", color: "#EDE9FE" },
-  summaryMeta: { fontSize: 11, color: "#9D6FCA", marginTop: 3 },
+  summaryTitle: { fontSize: 13, fontWeight: "700" },
+  summaryMeta: { fontSize: 11, marginTop: 3 },
 
   addBtn: {
-    backgroundColor: "#7C3AED",
     borderRadius: 14,
     paddingVertical: 15,
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
     gap: 7,
-    shadowColor: "#7C3AED",
+    shadowColor: "#8B5CF6",
     shadowOffset: { width: 0, height: 6 },
     shadowOpacity: 0.45,
     shadowRadius: 12,
     elevation: 10,
   },
-  addBtnOff: { backgroundColor: "#2D1B4E", shadowOpacity: 0, elevation: 0 },
-  addBtnTxt: { color: "#fff", fontSize: 15, fontWeight: "700" },
+  addBtnTxt: { fontSize: 15, fontWeight: "700" },
 
   toast: {
     position: "absolute",
@@ -436,12 +522,10 @@ const s = StyleSheet.create({
     right: 16,
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#1E0A35",
     borderRadius: 16,
     padding: 14,
     borderWidth: 1,
-    borderColor: "#3B1F60",
-    shadowColor: "#7C3AED",
+    shadowColor: "#8B5CF6",
     shadowOffset: { width: 0, height: 6 },
     shadowOpacity: 0.4,
     shadowRadius: 14,
@@ -452,18 +536,15 @@ const s = StyleSheet.create({
   toastTitle: {
     fontSize: 14,
     fontWeight: "700",
-    color: "#EDE9FE",
   },
   toastSub: {
     fontSize: 11,
-    color: "#9D6FCA",
     marginTop: 2,
   },
   toastAction: {
     flexDirection: "row",
     alignItems: "center",
     gap: 4,
-    backgroundColor: "#2D1B4E",
     paddingHorizontal: 12,
     paddingVertical: 8,
     borderRadius: 10,
@@ -472,6 +553,5 @@ const s = StyleSheet.create({
   toastActionTxt: {
     fontSize: 11,
     fontWeight: "700",
-    color: "#C084FC",
   },
 });

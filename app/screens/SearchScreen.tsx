@@ -11,15 +11,13 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import { C } from "../../constants/theme";
 import { useTasks } from "../context/TaskContext";
-
-const RECENT = [
-  { label: "Upcoming", icon: "grid-outline" },
-  { label: "Today", icon: "calendar-outline" },
-] as const;
+import { useTheme } from "../context/ThemeContext";
 
 export default function SearchScreen() {
   const { tasks, toggleDone } = useTasks();
+  const { colors, isDark } = useTheme();
 
   // useState for search query (State management requirement)
   const [query, setQuery] = useState("");
@@ -55,27 +53,27 @@ export default function SearchScreen() {
   const showResults = results.length > 0;
 
   return (
-    <SafeAreaView style={s.safe}>
+    <SafeAreaView style={[s.safe, { backgroundColor: colors.bg }]}>
       {/* ── Header ── */}
       <View style={s.header}>
-        <Text style={s.title}>Search</Text>
+        <Text style={[s.title, { color: colors.text }]}>Search</Text>
       </View>
 
       {/* ── Search bar (Text input requirement) ── */}
-      <View style={s.bar}>
+      <View style={[s.bar, { backgroundColor: colors.card, borderColor: colors.border }]}>
         <Ionicons
           name="search-outline"
           size={17}
-          color="#6B5A8A"
+          color={colors.muted}
           style={{ marginRight: 9 }}
         />
         <TextInput
-          style={s.barInput}
+          style={[s.barInput, { color: colors.text }]}
           value={query}
           onChangeText={setQuery}
           placeholder="Tasks, projects, and more"
-          placeholderTextColor="#4A3560"
-          selectionColor="#C084FC"
+          placeholderTextColor={colors.muted}
+          selectionColor={colors.primary}
           autoCapitalize="none"
           autoCorrect={false}
           returnKeyType="search"
@@ -83,7 +81,7 @@ export default function SearchScreen() {
         {/* Clear button (Interactive element) */}
         {query.length > 0 && (
           <TouchableOpacity onPress={() => setQuery("")}>
-            <Ionicons name="close-circle" size={17} color="#6B5A8A" />
+            <Ionicons name="close-circle" size={17} color={colors.muted} />
           </TouchableOpacity>
         )}
       </View>
@@ -95,45 +93,47 @@ export default function SearchScreen() {
           showsVerticalScrollIndicator={true}
         >
           <View style={s.recentWrap}>
-            <Text style={s.recentHdr}>Recently visited</Text>
-            {RECENT.map((item) => (
-              <TouchableOpacity
-                key={item.label}
-                style={s.recentRow}
-                activeOpacity={0.7}
-              >
-                <View style={s.recentIcon}>
-                  <Ionicons name={item.icon as any} size={17} color="#C084FC" />
-                </View>
-                <Text style={s.recentLabel}>{item.label}</Text>
-                <Ionicons name="chevron-forward" size={15} color="#3B1F60" />
-              </TouchableOpacity>
-            ))}
+            <Text style={[s.recentHdr, { color: colors.text }]}>Quick Filters</Text>
+            <View style={[s.recentDivider, { backgroundColor: colors.border }]} />
+
+            <TouchableOpacity style={[s.recentRow, { borderBottomColor: colors.highlight }]} activeOpacity={0.7}>
+              <View style={[s.recentIcon, { backgroundColor: colors.highlight }]}>
+                <Ionicons name="calendar-outline" size={17} color={colors.primary} />
+              </View>
+              <Text style={[s.recentLabel, { color: colors.muted }]}>Day</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity style={[s.recentRow, { borderBottomColor: colors.highlight }]} activeOpacity={0.7}>
+              <View style={[s.recentIcon, { backgroundColor: colors.highlight }]}>
+                <Ionicons name="time-outline" size={17} color={colors.primary} />
+              </View>
+              <Text style={[s.recentLabel, { color: colors.muted }]}>Time</Text>
+            </TouchableOpacity>
           </View>
 
           {doneTasks.length > 0 && (
             <View style={s.doneWrap}>
-              <Text style={s.doneHdr}>
+              <Text style={[s.doneHdr, { color: isDark ? "#4ADE80" : "#2D6A4F" }]}>
                 This Week  ·  {doneTasks.length} task{doneTasks.length !== 1 ? "s" : ""}
               </Text>
               {doneTasks.map((task) => (
-                <View key={task.id} style={s.doneCard}>
+                <View key={task.id} style={[s.doneCard, { backgroundColor: isDark ? "#1A3020" : "#EEF8F0", borderColor: isDark ? "#2D6A4F" : "#C8E6C9" }]}>
                   <View style={s.doneCardBody}>
-                    <Text style={s.doneCardTitle}>{task.title}</Text>
+                    <Text style={[s.doneCardTitle, { color: colors.text }]}>{task.title}</Text>
                     <View style={s.doneChips}>
-                      <View style={s.doneChip}>
-                        <Ionicons name="calendar-outline" size={10} color="#3B1F60" />
-                        <Text style={s.doneChipTxt}>{task.day}</Text>
+                      <View style={[s.doneChip, { backgroundColor: isDark ? "#2D6A4F" : "#D4EDDA" }]}>
+                        <Ionicons name="calendar-outline" size={10} color={isDark ? "#4ADE80" : "#2D6A4F"} />
+                        <Text style={[s.doneChipTxt, { color: isDark ? "#4ADE80" : "#2D6A4F" }]}>{task.day}</Text>
                       </View>
                       {task.time ? (
-                        <View style={s.doneChip}>
-                          <Ionicons name="time-outline" size={10} color="#3B1F60" />
-                          <Text style={s.doneChipTxt}>{task.time}</Text>
+                        <View style={[s.doneChip, { backgroundColor: isDark ? "#2D6A4F" : "#D4EDDA" }]}>
+                          <Ionicons name="time-outline" size={10} color={isDark ? "#4ADE80" : "#2D6A4F"} />
+                          <Text style={[s.doneChipTxt, { color: isDark ? "#4ADE80" : "#2D6A4F" }]}>{task.time}</Text>
                         </View>
                       ) : null}
                     </View>
                   </View>
-                  <Ionicons name="checkmark-circle" size={20} color="#3B1F60" />
+                  <Ionicons name="checkmark-circle" size={20} color={colors.success} />
                 </View>
               ))}
             </View>
@@ -144,9 +144,9 @@ export default function SearchScreen() {
       {/* ── No results ── */}
       {showEmpty && (
         <View style={s.emptyWrap}>
-          <Ionicons name="search-outline" size={52} color="#2D1B4E" />
-          <Text style={s.emptyTitle}>No tasks found</Text>
-          <Text style={s.emptySub}>Try a different title, day or note</Text>
+          <Ionicons name="search-outline" size={52} color={colors.mutedLight} />
+          <Text style={[s.emptyTitle, { color: colors.text }]}>No tasks found</Text>
+          <Text style={[s.emptySub, { color: colors.muted }]}>Try a different title, day or note</Text>
         </View>
       )}
 
@@ -158,13 +158,17 @@ export default function SearchScreen() {
           contentContainerStyle={s.list}
           showsVerticalScrollIndicator={true}
           ListHeaderComponent={
-            <Text style={s.resultsHdr}>
+            <Text style={[s.resultsHdr, { color: colors.muted }]}>
               {results.length} result{results.length !== 1 ? "s" : ""}
             </Text>
           }
           renderItem={({ item }) => (
-            <View style={[s.card, item.done && s.cardDone]}>
-              <View style={s.accent} />
+            <View style={[
+              s.card,
+              { backgroundColor: isDark ? colors.card : "#F3EFFF", borderColor: isDark ? colors.border : "#D8CCF0" },
+              item.done && (isDark ? s.cardDoneDark : s.cardDone),
+            ]}>
+              <View style={[s.accent, { backgroundColor: colors.primary }, item.done && { backgroundColor: colors.success }]} />
 
               {/* Touchable checkbox (Interactive element) */}
               <TouchableOpacity
@@ -173,34 +177,34 @@ export default function SearchScreen() {
                 activeOpacity={0.7}
               >
                 {item.done ? (
-                  <Ionicons name="checkmark-circle" size={21} color="#C084FC" />
+                  <Ionicons name="checkmark-circle" size={21} color={colors.success} />
                 ) : (
-                  <Ionicons name="ellipse-outline" size={21} color="#4A3560" />
+                  <Ionicons name="ellipse-outline" size={21} color={colors.muted} />
                 )}
               </TouchableOpacity>
 
               <View style={s.cardBody}>
-                <Text style={[s.cardTitle, item.done && s.cardTitleDone]}>
+                <Text style={[s.cardTitle, { color: colors.text }, item.done && s.cardTitleDone]}>
                   {item.title}
                 </Text>
                 <View style={s.chips}>
-                  <View style={s.chip}>
+                  <View style={[s.chip, { backgroundColor: colors.highlight, borderColor: colors.border }]}>
                     <Ionicons
                       name="calendar-outline"
                       size={10}
-                      color="#9D6FCA"
+                      color={colors.primary}
                     />
-                    <Text style={s.chipTxt}>{item.day}</Text>
+                    <Text style={[s.chipTxt, { color: colors.primary }]}>{item.day}</Text>
                   </View>
                   {item.time ? (
-                    <View style={s.chip}>
-                      <Ionicons name="time-outline" size={10} color="#9D6FCA" />
-                      <Text style={s.chipTxt}>{item.time}</Text>
+                    <View style={[s.chip, { backgroundColor: colors.highlight, borderColor: colors.border }]}>
+                      <Ionicons name="time-outline" size={10} color={colors.primary} />
+                      <Text style={[s.chipTxt, { color: colors.primary }]}>{item.time}</Text>
                     </View>
                   ) : null}
                   {item.done && (
-                    <View style={[s.chip, s.chipDone]}>
-                      <Text style={s.chipDoneTxt}>Done</Text>
+                    <View style={[s.chip, s.chipDone, { backgroundColor: isDark ? "#2D6A4F" : "#D4EDDA", borderColor: isDark ? "#2D6A4F" : "#C8E6C9" }]}>
+                      <Text style={[s.chipDoneTxt, { color: colors.success }]}>Done</Text>
                     </View>
                   )}
                 </View>
@@ -214,13 +218,12 @@ export default function SearchScreen() {
 }
 
 const s = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: "#0D0118" },
+  safe: { flex: 1 },
   scrollContent: { paddingBottom: 100 },
   header: { paddingHorizontal: 20, paddingTop: 18, paddingBottom: 8 },
   title: {
     fontSize: 26,
     fontWeight: "800",
-    color: "#EDE9FE",
     letterSpacing: -0.4,
   },
 
@@ -229,20 +232,17 @@ const s = StyleSheet.create({
     alignItems: "center",
     marginHorizontal: 18,
     marginBottom: 20,
-    backgroundColor: "#160828",
     borderRadius: 14,
     paddingHorizontal: 14,
     paddingVertical: 11,
     borderWidth: 1,
-    borderColor: "#2D1B4E",
   },
-  barInput: { flex: 1, fontSize: 14, color: "#EDE9FE", padding: 0 },
+  barInput: { flex: 1, fontSize: 14, padding: 0 },
 
   recentWrap: { paddingHorizontal: 20 },
   recentHdr: {
     fontSize: 13,
     fontWeight: "700",
-    color: "#EDE9FE",
     marginBottom: 12,
   },
   recentRow: {
@@ -250,42 +250,45 @@ const s = StyleSheet.create({
     alignItems: "center",
     paddingVertical: 13,
     borderBottomWidth: 1,
-    borderBottomColor: "#1A0A2E",
   },
   recentIcon: {
     width: 34,
     height: 34,
     borderRadius: 10,
-    backgroundColor: "#2D1B4E",
     alignItems: "center",
     justifyContent: "center",
     marginRight: 13,
   },
-  recentLabel: { flex: 1, fontSize: 14, fontWeight: "500", color: "#C4B5E0" },
+  recentLabel: { flex: 1, fontSize: 14, fontWeight: "500" },
+  recentDivider: {
+    height: 1,
+    marginVertical: 8,
+  },
 
   doneWrap: { paddingHorizontal: 20, marginTop: 24, paddingBottom: 100 },
   doneHdr: {
     fontSize: 26,
     fontWeight: "800",
-    color: "#C084FC",
     letterSpacing: -0.4,
     marginBottom: 14,
   },
   doneCard: {
-    backgroundColor: "#9D6FCA",
     borderRadius: 14,
     padding: 14,
     marginBottom: 9,
     flexDirection: "row",
     alignItems: "center",
     borderWidth: 1,
-    borderColor: "#B388D6",
+    shadowColor: "#32C671",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.15,
+    shadowRadius: 6,
+    elevation: 4,
   },
   doneCardBody: { flex: 1, marginRight: 10 },
   doneCardTitle: {
     fontSize: 14,
     fontWeight: "600",
-    color: "#3B1F60",
     lineHeight: 21,
   },
   doneChips: { flexDirection: "row", flexWrap: "wrap", gap: 5, marginTop: 6 },
@@ -293,12 +296,11 @@ const s = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     gap: 4,
-    backgroundColor: "rgba(255,255,255,0.25)",
     borderRadius: 7,
     paddingHorizontal: 8,
     paddingVertical: 3,
   },
-  doneChipTxt: { fontSize: 10, color: "#3B1F60", fontWeight: "600" },
+  doneChipTxt: { fontSize: 10, fontWeight: "600" },
 
   emptyWrap: {
     flex: 1,
@@ -309,12 +311,10 @@ const s = StyleSheet.create({
   emptyTitle: {
     fontSize: 17,
     fontWeight: "700",
-    color: "#3B1F60",
     marginTop: 16,
   },
   emptySub: {
     fontSize: 13,
-    color: "#2D1B4E",
     marginTop: 6,
     textAlign: "center",
     paddingHorizontal: 40,
@@ -324,36 +324,49 @@ const s = StyleSheet.create({
   resultsHdr: {
     fontSize: 10,
     fontWeight: "700",
-    color: "#6B5A8A",
     letterSpacing: 0.8,
     textTransform: "uppercase",
     marginBottom: 10,
   },
 
   card: {
-    backgroundColor: "#160828",
     borderRadius: 14,
     padding: 13,
     marginBottom: 9,
     flexDirection: "row",
     alignItems: "flex-start",
     borderWidth: 1,
-    borderColor: "#2D1B4E",
     overflow: "hidden",
-    shadowColor: "#7C3AED",
+    shadowColor: "#8B5CF6",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.08,
     shadowRadius: 5,
     elevation: 3,
   },
-  cardDone: { opacity: 0.5 },
+  cardDone: {
+    backgroundColor: "#EEF8F0",
+    borderColor: "#C8E6C9",
+    shadowColor: "#32C671",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.15,
+    shadowRadius: 6,
+    elevation: 4,
+  },
+  cardDoneDark: {
+    backgroundColor: "#1A3020",
+    borderColor: "#2D6A4F",
+    shadowColor: "#4ADE80",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.15,
+    shadowRadius: 6,
+    elevation: 4,
+  },
   accent: {
     position: "absolute",
     left: 0,
     top: 0,
     bottom: 0,
     width: 3,
-    backgroundColor: "#7C3AED",
     borderRadius: 3,
   },
   checkbox: { marginLeft: 8, marginRight: 10, marginTop: 1 },
@@ -361,23 +374,20 @@ const s = StyleSheet.create({
   cardTitle: {
     fontSize: 14,
     fontWeight: "600",
-    color: "#EDE9FE",
     lineHeight: 21,
   },
-  cardTitleDone: { textDecorationLine: "line-through", color: "#4A3560" },
+  cardTitleDone: { textDecorationLine: "line-through", color: "#6B9B78" },
   chips: { flexDirection: "row", flexWrap: "wrap", gap: 5, marginTop: 6 },
   chip: {
     flexDirection: "row",
     alignItems: "center",
     gap: 4,
-    backgroundColor: "#1E0A35",
     borderRadius: 7,
     paddingHorizontal: 8,
     paddingVertical: 3,
     borderWidth: 1,
-    borderColor: "#2D1B4E",
   },
-  chipTxt: { fontSize: 10, color: "#9D6FCA", fontWeight: "500" },
-  chipDone: { backgroundColor: "#3B1F60", borderColor: "#5B2D8A" },
-  chipDoneTxt: { fontSize: 10, color: "#C084FC", fontWeight: "700" },
+  chipTxt: { fontSize: 10, fontWeight: "500" },
+  chipDone: {},
+  chipDoneTxt: { fontSize: 10, fontWeight: '700' },
 });
