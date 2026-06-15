@@ -45,7 +45,12 @@ function WelcomePopup({
   const { colors, isDark } = useTheme();
   return (
     <View style={wp.overlay}>
-      <View style={[wp.card, { backgroundColor: colors.card, borderColor: colors.border }]}>
+      <View
+        style={[
+          wp.card,
+          { backgroundColor: colors.card, borderColor: colors.border },
+        ]}
+      >
         <TouchableOpacity
           style={[wp.closeBtn, { backgroundColor: colors.highlight }]}
           onPress={onClose}
@@ -62,7 +67,12 @@ function WelcomePopup({
             </View>
             <Text style={[wp.calendarDate, { color: C.white }]}>17</Text>
           </View>
-          <View style={[wp.badge, { backgroundColor: colors.primary, borderColor: C.white }]}>
+          <View
+            style={[
+              wp.badge,
+              { backgroundColor: colors.primary, borderColor: C.white },
+            ]}
+          >
             <Ionicons name="checkmark" size={18} color={C.white} />
           </View>
         </View>
@@ -72,7 +82,11 @@ function WelcomePopup({
           Organize your day, track tasks,{"\n"}and stay on top of what matters.
         </Text>
 
-        <TouchableOpacity style={[wp.btn, { backgroundColor: colors.primary }]} onPress={onDone} activeOpacity={0.85}>
+        <TouchableOpacity
+          style={[wp.btn, { backgroundColor: colors.primary }]}
+          onPress={onDone}
+          activeOpacity={0.85}
+        >
           <Text style={[wp.btnTxt, { color: C.white }]}>
             {first ? "Get Started" : "Continue Tasks Plan"}
           </Text>
@@ -141,9 +155,17 @@ export default function TodayScreen() {
       {/* ── Task list ── */}
       {todayTasks.length === 0 ? (
         <View style={s.empty}>
-          <Ionicons name="calendar-outline" size={60} color={colors.mutedLight} />
-          <Text style={[s.emptyTitle, { color: colors.text }]}>Don't You have a Task?</Text>
-          <Text style={[s.emptySub, { color: colors.muted }]}>Tap + to add one</Text>
+          <Ionicons
+            name="calendar-outline"
+            size={60}
+            color={colors.mutedLight}
+          />
+          <Text style={[s.emptyTitle, { color: colors.text }]}>
+            Don't You have a Task?
+          </Text>
+          <Text style={[s.emptySub, { color: colors.muted }]}>
+            Tap + to add one
+          </Text>
         </View>
       ) : (
         <FlatList
@@ -152,12 +174,23 @@ export default function TodayScreen() {
           contentContainerStyle={s.list}
           showsVerticalScrollIndicator={true}
           renderItem={({ item }) => (
-            <View style={[
-              s.card,
-              { backgroundColor: isDark ? colors.card : "#F3EFFF", borderColor: isDark ? colors.border : "#D8CCF0" },
-              item.done && (isDark ? s.cardDoneDark : s.cardDone),
-            ]}>
-              <View style={[s.accent, { backgroundColor: colors.primary }, item.done && { backgroundColor: colors.success }]} />
+            <View
+              style={[
+                s.card,
+                {
+                  backgroundColor: isDark ? colors.card : "#F3EFFF",
+                  borderColor: isDark ? colors.border : "#D8CCF0",
+                },
+                item.done && (isDark ? s.cardDoneDark : s.cardDone),
+              ]}
+            >
+              <View
+                style={[
+                  s.accent,
+                  { backgroundColor: colors.primary },
+                  item.done && { backgroundColor: colors.success },
+                ]}
+              />
 
               <TouchableOpacity
                 style={s.checkbox}
@@ -171,19 +204,33 @@ export default function TodayScreen() {
                     color={colors.success}
                   />
                 ) : (
-                  <Ionicons name="ellipse-outline" size={22} color={colors.muted} />
+                  <Ionicons
+                    name="ellipse-outline"
+                    size={22}
+                    color={colors.muted}
+                  />
                 )}
               </TouchableOpacity>
 
               <View style={s.cardBody}>
-                <Text style={[s.cardTitle, { color: colors.text }, item.done && s.cardTitleDone]}>
+                <Text
+                  style={[
+                    s.cardTitle,
+                    { color: colors.text },
+                    item.done && s.cardTitleDone,
+                  ]}
+                >
                   {item.title}
                 </Text>
                 {item.description ? (
-                  <Text style={[s.cardDesc, { color: colors.muted }]}>{item.description}</Text>
+                  <Text style={[s.cardDesc, { color: colors.muted }]}>
+                    {item.description}
+                  </Text>
                 ) : null}
                 {item.time ? (
-                  <Text style={[s.cardTime, { color: colors.muted }]}>⏰ {item.time}</Text>
+                  <Text style={[s.cardTime, { color: colors.muted }]}>
+                    ⏰ {item.time}
+                  </Text>
                 ) : null}
               </View>
             </View>
@@ -193,7 +240,10 @@ export default function TodayScreen() {
 
       {/* ── Floating add button ── */}
       <TouchableOpacity
-        style={[s.fab, { backgroundColor: colors.primary, shadowColor: colors.primary }]}
+        style={[
+          s.fab,
+          { backgroundColor: colors.primary, shadowColor: colors.primary },
+        ]}
         onPress={() => navigation.navigate("AddTask")}
         activeOpacity={0.85}
       >
@@ -228,9 +278,18 @@ export default function TodayScreen() {
           activeOpacity={1}
           onPress={() => setActionTaskId(null)}
         >
-          <SafeAreaView style={[s.actionSheet, { backgroundColor: colors.card, borderColor: colors.border }]}>
-            <View style={[s.actionHandle, { backgroundColor: colors.mutedLight }]} />
-            <Text style={[s.actionTitle, { color: colors.text }]}>{actionTask?.title}</Text>
+          <SafeAreaView
+            style={[
+              s.actionSheet,
+              { backgroundColor: colors.card, borderColor: colors.border },
+            ]}
+          >
+            <View
+              style={[s.actionHandle, { backgroundColor: colors.mutedLight }]}
+            />
+            <Text style={[s.actionTitle, { color: colors.text }]}>
+              {actionTask?.title}
+            </Text>
             <Text style={[s.actionSub, { color: colors.muted }]}>
               {actionTask?.done
                 ? "Undo done or delete this task"
@@ -239,22 +298,38 @@ export default function TodayScreen() {
 
             <View style={s.actionRow}>
               <TouchableOpacity
-                style={[s.actionBtn, s.actionDelete, { backgroundColor: colors.highlight, borderColor: colors.mutedLight }]}
+                style={[
+                  s.actionBtn,
+                  s.actionDelete,
+                  {
+                    backgroundColor: colors.highlight,
+                    borderColor: colors.mutedLight,
+                  },
+                ]}
                 onPress={() => {
                   if (actionTask) deleteTask(actionTask.id);
                   setActionTaskId(null);
                 }}
                 activeOpacity={0.8}
               >
-                <Ionicons name="trash-outline" size={18} color={colors.danger} />
-                <Text style={[s.actionDeleteTxt, { color: colors.danger }]}>Delete</Text>
+                <Ionicons
+                  name="trash-outline"
+                  size={18}
+                  color={colors.danger}
+                />
+                <Text style={[s.actionDeleteTxt, { color: colors.danger }]}>
+                  Delete
+                </Text>
               </TouchableOpacity>
 
               <TouchableOpacity
                 style={[
                   s.actionBtn,
                   actionTask?.done ? s.actionUndo : s.actionDone,
-                  { backgroundColor: colors.primary, borderColor: colors.primary },
+                  {
+                    backgroundColor: colors.primary,
+                    borderColor: colors.primary,
+                  },
                 ]}
                 onPress={() => {
                   if (actionTask) toggleDone(actionTask.id);
@@ -450,7 +525,6 @@ const s = StyleSheet.create({
     fontWeight: "700",
     color: C.white,
   },
-
 });
 
 const wp = StyleSheet.create({

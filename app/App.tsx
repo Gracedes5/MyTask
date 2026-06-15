@@ -7,7 +7,7 @@ import {
 } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { StatusBar } from "expo-status-bar";
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Modal,
   SafeAreaView,
@@ -43,9 +43,10 @@ function Tabs() {
   const { tasks, deleteTask } = useTasks();
   const { colors, isDark, toggleDarkMode } = useTheme();
   const route = useRoute();
-  const routeScreen = ((route.params as { screen?: keyof TabParamList })?.screen) || "Today";
+  const routeScreen =
+    (route.params as { screen?: keyof TabParamList })?.screen || "Today";
   const [initialTab, setInitialTab] = useState<keyof TabParamList>(
-    routeScreen as keyof TabParamList
+    routeScreen as keyof TabParamList,
   );
   useEffect(() => {
     const p = route.params as { screen?: keyof TabParamList } | undefined;

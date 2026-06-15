@@ -11,7 +11,6 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import { C } from "../../constants/theme";
 import { useTasks } from "../context/TaskContext";
 import { useTheme } from "../context/ThemeContext";
 
@@ -60,7 +59,12 @@ export default function SearchScreen() {
       </View>
 
       {/* ── Search bar (Text input requirement) ── */}
-      <View style={[s.bar, { backgroundColor: colors.card, borderColor: colors.border }]}>
+      <View
+        style={[
+          s.bar,
+          { backgroundColor: colors.card, borderColor: colors.border },
+        ]}
+      >
         <Ionicons
           name="search-outline"
           size={17}
@@ -93,19 +97,41 @@ export default function SearchScreen() {
           showsVerticalScrollIndicator={true}
         >
           <View style={s.recentWrap}>
-            <Text style={[s.recentHdr, { color: colors.text }]}>Quick Filters</Text>
-            <View style={[s.recentDivider, { backgroundColor: colors.border }]} />
+            <Text style={[s.recentHdr, { color: colors.text }]}>
+              Quick Filters
+            </Text>
+            <View
+              style={[s.recentDivider, { backgroundColor: colors.border }]}
+            />
 
-            <TouchableOpacity style={[s.recentRow, { borderBottomColor: colors.highlight }]} activeOpacity={0.7}>
-              <View style={[s.recentIcon, { backgroundColor: colors.highlight }]}>
-                <Ionicons name="calendar-outline" size={17} color={colors.primary} />
+            <TouchableOpacity
+              style={[s.recentRow, { borderBottomColor: colors.highlight }]}
+              activeOpacity={0.7}
+            >
+              <View
+                style={[s.recentIcon, { backgroundColor: colors.highlight }]}
+              >
+                <Ionicons
+                  name="calendar-outline"
+                  size={17}
+                  color={colors.primary}
+                />
               </View>
               <Text style={[s.recentLabel, { color: colors.muted }]}>Day</Text>
             </TouchableOpacity>
 
-            <TouchableOpacity style={[s.recentRow, { borderBottomColor: colors.highlight }]} activeOpacity={0.7}>
-              <View style={[s.recentIcon, { backgroundColor: colors.highlight }]}>
-                <Ionicons name="time-outline" size={17} color={colors.primary} />
+            <TouchableOpacity
+              style={[s.recentRow, { borderBottomColor: colors.highlight }]}
+              activeOpacity={0.7}
+            >
+              <View
+                style={[s.recentIcon, { backgroundColor: colors.highlight }]}
+              >
+                <Ionicons
+                  name="time-outline"
+                  size={17}
+                  color={colors.primary}
+                />
               </View>
               <Text style={[s.recentLabel, { color: colors.muted }]}>Time</Text>
             </TouchableOpacity>
@@ -113,27 +139,77 @@ export default function SearchScreen() {
 
           {doneTasks.length > 0 && (
             <View style={s.doneWrap}>
-              <Text style={[s.doneHdr, { color: isDark ? "#4ADE80" : "#2D6A4F" }]}>
-                This Week  ·  {doneTasks.length} task{doneTasks.length !== 1 ? "s" : ""}
+              <Text
+                style={[s.doneHdr, { color: isDark ? "#4ADE80" : "#2D6A4F" }]}
+              >
+                This Week · {doneTasks.length} task
+                {doneTasks.length !== 1 ? "s" : ""}
               </Text>
               {doneTasks.map((task) => (
-                <View key={task.id} style={[s.doneCard, { backgroundColor: isDark ? "#1A3020" : "#EEF8F0", borderColor: isDark ? "#2D6A4F" : "#C8E6C9" }]}>
+                <View
+                  key={task.id}
+                  style={[
+                    s.doneCard,
+                    {
+                      backgroundColor: isDark ? "#1A3020" : "#EEF8F0",
+                      borderColor: isDark ? "#2D6A4F" : "#C8E6C9",
+                    },
+                  ]}
+                >
                   <View style={s.doneCardBody}>
-                    <Text style={[s.doneCardTitle, { color: colors.text }]}>{task.title}</Text>
+                    <Text style={[s.doneCardTitle, { color: colors.text }]}>
+                      {task.title}
+                    </Text>
                     <View style={s.doneChips}>
-                      <View style={[s.doneChip, { backgroundColor: isDark ? "#2D6A4F" : "#D4EDDA" }]}>
-                        <Ionicons name="calendar-outline" size={10} color={isDark ? "#4ADE80" : "#2D6A4F"} />
-                        <Text style={[s.doneChipTxt, { color: isDark ? "#4ADE80" : "#2D6A4F" }]}>{task.day}</Text>
+                      <View
+                        style={[
+                          s.doneChip,
+                          { backgroundColor: isDark ? "#2D6A4F" : "#D4EDDA" },
+                        ]}
+                      >
+                        <Ionicons
+                          name="calendar-outline"
+                          size={10}
+                          color={isDark ? "#4ADE80" : "#2D6A4F"}
+                        />
+                        <Text
+                          style={[
+                            s.doneChipTxt,
+                            { color: isDark ? "#4ADE80" : "#2D6A4F" },
+                          ]}
+                        >
+                          {task.day}
+                        </Text>
                       </View>
                       {task.time ? (
-                        <View style={[s.doneChip, { backgroundColor: isDark ? "#2D6A4F" : "#D4EDDA" }]}>
-                          <Ionicons name="time-outline" size={10} color={isDark ? "#4ADE80" : "#2D6A4F"} />
-                          <Text style={[s.doneChipTxt, { color: isDark ? "#4ADE80" : "#2D6A4F" }]}>{task.time}</Text>
+                        <View
+                          style={[
+                            s.doneChip,
+                            { backgroundColor: isDark ? "#2D6A4F" : "#D4EDDA" },
+                          ]}
+                        >
+                          <Ionicons
+                            name="time-outline"
+                            size={10}
+                            color={isDark ? "#4ADE80" : "#2D6A4F"}
+                          />
+                          <Text
+                            style={[
+                              s.doneChipTxt,
+                              { color: isDark ? "#4ADE80" : "#2D6A4F" },
+                            ]}
+                          >
+                            {task.time}
+                          </Text>
                         </View>
                       ) : null}
                     </View>
                   </View>
-                  <Ionicons name="checkmark-circle" size={20} color={colors.success} />
+                  <Ionicons
+                    name="checkmark-circle"
+                    size={20}
+                    color={colors.success}
+                  />
                 </View>
               ))}
             </View>
@@ -145,8 +221,12 @@ export default function SearchScreen() {
       {showEmpty && (
         <View style={s.emptyWrap}>
           <Ionicons name="search-outline" size={52} color={colors.mutedLight} />
-          <Text style={[s.emptyTitle, { color: colors.text }]}>No tasks found</Text>
-          <Text style={[s.emptySub, { color: colors.muted }]}>Try a different title, day or note</Text>
+          <Text style={[s.emptyTitle, { color: colors.text }]}>
+            No tasks found
+          </Text>
+          <Text style={[s.emptySub, { color: colors.muted }]}>
+            Try a different title, day or note
+          </Text>
         </View>
       )}
 
@@ -163,12 +243,23 @@ export default function SearchScreen() {
             </Text>
           }
           renderItem={({ item }) => (
-            <View style={[
-              s.card,
-              { backgroundColor: isDark ? colors.card : "#F3EFFF", borderColor: isDark ? colors.border : "#D8CCF0" },
-              item.done && (isDark ? s.cardDoneDark : s.cardDone),
-            ]}>
-              <View style={[s.accent, { backgroundColor: colors.primary }, item.done && { backgroundColor: colors.success }]} />
+            <View
+              style={[
+                s.card,
+                {
+                  backgroundColor: isDark ? colors.card : "#F3EFFF",
+                  borderColor: isDark ? colors.border : "#D8CCF0",
+                },
+                item.done && (isDark ? s.cardDoneDark : s.cardDone),
+              ]}
+            >
+              <View
+                style={[
+                  s.accent,
+                  { backgroundColor: colors.primary },
+                  item.done && { backgroundColor: colors.success },
+                ]}
+              />
 
               {/* Touchable checkbox (Interactive element) */}
               <TouchableOpacity
@@ -177,34 +268,83 @@ export default function SearchScreen() {
                 activeOpacity={0.7}
               >
                 {item.done ? (
-                  <Ionicons name="checkmark-circle" size={21} color={colors.success} />
+                  <Ionicons
+                    name="checkmark-circle"
+                    size={21}
+                    color={colors.success}
+                  />
                 ) : (
-                  <Ionicons name="ellipse-outline" size={21} color={colors.muted} />
+                  <Ionicons
+                    name="ellipse-outline"
+                    size={21}
+                    color={colors.muted}
+                  />
                 )}
               </TouchableOpacity>
 
               <View style={s.cardBody}>
-                <Text style={[s.cardTitle, { color: colors.text }, item.done && s.cardTitleDone]}>
+                <Text
+                  style={[
+                    s.cardTitle,
+                    { color: colors.text },
+                    item.done && s.cardTitleDone,
+                  ]}
+                >
                   {item.title}
                 </Text>
                 <View style={s.chips}>
-                  <View style={[s.chip, { backgroundColor: colors.highlight, borderColor: colors.border }]}>
+                  <View
+                    style={[
+                      s.chip,
+                      {
+                        backgroundColor: colors.highlight,
+                        borderColor: colors.border,
+                      },
+                    ]}
+                  >
                     <Ionicons
                       name="calendar-outline"
                       size={10}
                       color={colors.primary}
                     />
-                    <Text style={[s.chipTxt, { color: colors.primary }]}>{item.day}</Text>
+                    <Text style={[s.chipTxt, { color: colors.primary }]}>
+                      {item.day}
+                    </Text>
                   </View>
                   {item.time ? (
-                    <View style={[s.chip, { backgroundColor: colors.highlight, borderColor: colors.border }]}>
-                      <Ionicons name="time-outline" size={10} color={colors.primary} />
-                      <Text style={[s.chipTxt, { color: colors.primary }]}>{item.time}</Text>
+                    <View
+                      style={[
+                        s.chip,
+                        {
+                          backgroundColor: colors.highlight,
+                          borderColor: colors.border,
+                        },
+                      ]}
+                    >
+                      <Ionicons
+                        name="time-outline"
+                        size={10}
+                        color={colors.primary}
+                      />
+                      <Text style={[s.chipTxt, { color: colors.primary }]}>
+                        {item.time}
+                      </Text>
                     </View>
                   ) : null}
                   {item.done && (
-                    <View style={[s.chip, s.chipDone, { backgroundColor: isDark ? "#2D6A4F" : "#D4EDDA", borderColor: isDark ? "#2D6A4F" : "#C8E6C9" }]}>
-                      <Text style={[s.chipDoneTxt, { color: colors.success }]}>Done</Text>
+                    <View
+                      style={[
+                        s.chip,
+                        s.chipDone,
+                        {
+                          backgroundColor: isDark ? "#2D6A4F" : "#D4EDDA",
+                          borderColor: isDark ? "#2D6A4F" : "#C8E6C9",
+                        },
+                      ]}
+                    >
+                      <Text style={[s.chipDoneTxt, { color: colors.success }]}>
+                        Done
+                      </Text>
                     </View>
                   )}
                 </View>
@@ -389,5 +529,5 @@ const s = StyleSheet.create({
   },
   chipTxt: { fontSize: 10, fontWeight: "500" },
   chipDone: {},
-  chipDoneTxt: { fontSize: 10, fontWeight: '700' },
+  chipDoneTxt: { fontSize: 10, fontWeight: "700" },
 });
