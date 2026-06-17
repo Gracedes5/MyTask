@@ -77,7 +77,7 @@ function WelcomePopup({
           </View>
         </View>
 
-        <Text style={[wp.title, { color: colors.text }]}>Plan MyTask</Text>
+        <Text style={[wp.title, { color: colors.text }]}>Plan Taskly</Text>
         <Text style={[wp.sub, { color: colors.muted }]}>
           Organize your day, track tasks,{"\n"}and stay on top of what matters.
         </Text>
@@ -92,6 +92,147 @@ function WelcomePopup({
           </Text>
           <Ionicons name="arrow-forward" size={18} color={C.white} />
         </TouchableOpacity>
+      </View>
+    </View>
+  );
+}
+
+/* ── Circular progress ring ── */
+function ProgressRing({
+  pct,
+  size = 96,
+  stroke = 8,
+  color,
+  bgColor,
+  cardBg,
+  children,
+}: {
+  pct: number;
+  size?: number;
+  stroke?: number;
+  color: string;
+  bgColor: string;
+  cardBg: string;
+  children: React.ReactNode;
+}) {
+  const half = size / 2;
+  const innerSize = size - stroke * 2;
+  const clamped = Math.min(100, Math.max(0, pct));
+
+  // Right cover sweeps 0→180deg as progress goes 0→50%
+  const rightAngle = Math.min(180, (clamped / 50) * 180);
+  // Left cover sweeps 0→180deg as progress goes 50→100%
+  const leftAngle = Math.max(0, ((clamped - 50) / 50) * 180);
+
+  return (
+    <View style={{ width: size, height: size }}>
+      {/* Gray track */}
+      <View
+        style={{
+          position: "absolute",
+          width: size,
+          height: size,
+          borderRadius: half,
+          borderWidth: stroke,
+          borderColor: bgColor,
+        }}
+      />
+
+      {/* Colored progress (always a full ring, progressively uncovered) */}
+      <View
+        style={{
+          position: "absolute",
+          width: size,
+          height: size,
+          borderRadius: half,
+          borderWidth: stroke,
+          borderColor: color,
+        }}
+      />
+
+      {/* Right cover – hides/shows the right half of the colored ring */}
+      <View
+        style={{
+          position: "absolute",
+          top: 0,
+          left: half,
+          width: half,
+          height: size,
+          overflow: "hidden",
+        }}
+      >
+        <View
+          style={{
+            position: "absolute",
+            left: -half,
+            top: 0,
+            width: half * 2,
+            height: size,
+            transform: [{ rotate: `${rightAngle}deg` }],
+          }}
+        >
+          <View
+            style={{
+              position: "absolute",
+              right: 0,
+              top: 0,
+              width: half,
+              height: size,
+              backgroundColor: cardBg,
+            }}
+          />
+        </View>
+      </View>
+
+      {/* Left cover – hides/shows the left half of the colored ring */}
+      <View
+        style={{
+          position: "absolute",
+          top: 0,
+          left: 0,
+          width: half,
+          height: size,
+          overflow: "hidden",
+        }}
+      >
+        <View
+          style={{
+            position: "absolute",
+            left: 0,
+            top: 0,
+            width: half * 2,
+            height: size,
+            transform: [{ rotate: `${leftAngle}deg` }],
+          }}
+        >
+          <View
+            style={{
+              position: "absolute",
+              left: 0,
+              top: 0,
+              width: half,
+              height: size,
+              backgroundColor: cardBg,
+            }}
+          />
+        </View>
+      </View>
+
+      {/* Center hole */}
+      <View
+        style={{
+          position: "absolute",
+          top: stroke,
+          left: stroke,
+          width: innerSize,
+          height: innerSize,
+          borderRadius: innerSize / 2,
+          backgroundColor: cardBg,
+          alignItems: "center",
+          justifyContent: "center",
+        }}
+      >
+        {children}
       </View>
     </View>
   );
@@ -126,12 +267,71 @@ export default function TodayScreen() {
   const todayTasks = tasks.filter((t) => t.day === todayName);
   const doneCount = todayTasks.filter((t) => t.done).length;
 
+  const total = todayTasks.length;
+  const completed = doneCount;
+  const pct = total > 0 ? (completed / total) * 100 : 0;
+
+  const priorityLevel =
+    total >= 3 ? "High Priority" : total >= 1 ? "Medium Priority" : "Low Priority";
+
+  const priorityMsg =
+    total > 0 && completed === total
+      ? "Priority tasks completed."
+      : total - completed === 1
+        ? "Almost there! One more to go."
+        : "Stay focused on today's goals.";
+
   const greeting = () => {
     const h = new Date().getHours();
     if (h < 12) return "Good Morning";
     if (h < 17) return "Good Afternoon";
     return "Good Evening";
   };
+
+  const priorityCard = total > 0 && (
+    <View
+      style={[
+        pr.card,
+        {
+          backgroundColor: colors.card,
+          borderColor: colors.border,
+        },
+      ]}
+    >
+      <Text style={[pr.heading, { color: colors.primary }]}>
+        TODAY'S PRIORITY
+      </Text>
+
+      <View style={pr.ringRow}>
+        <ProgressRing
+          pct={pct}
+          size={88}
+          stroke={7}
+          color={colors.success}
+          bgColor={isDark ? "#2D6A4F" : "#C8E6C9"}
+          cardBg={colors.card}
+        >
+          <View style={pr.ringCenter}>
+            <Ionicons
+              name="flag"
+              size={16}
+              color={colors.success}
+            />
+            <Text style={[pr.ringFrac, { color: colors.text }]}>
+              {completed}/{total}
+            </Text>
+          </View>
+        </ProgressRing>
+
+        <View style={pr.info}>
+          <Text style={[pr.level, { color: colors.text }]}>
+            {priorityLevel}
+          </Text>
+          <Text style={[pr.msg, { color: colors.muted }]}>{priorityMsg}</Text>
+        </View>
+      </View>
+    </View>
+  );
 
   return (
     <SafeAreaView style={[s.safe, { backgroundColor: colors.bg }]}>
@@ -173,6 +373,8 @@ export default function TodayScreen() {
           keyExtractor={(item) => item.id}
           contentContainerStyle={s.list}
           showsVerticalScrollIndicator={true}
+          ListFooterComponent={priorityCard}
+          ListFooterComponentStyle={pr.footer}
           renderItem={({ item }) => (
             <View
               style={[
@@ -640,5 +842,53 @@ const wp = StyleSheet.create({
   btnTxt: {
     fontSize: 15,
     fontWeight: "700",
+  },
+});
+
+const pr = StyleSheet.create({
+  footer: {
+    paddingBottom: 8,
+  },
+  card: {
+    borderRadius: 18,
+    borderWidth: 1,
+    padding: 20,
+    marginTop: 4,
+    shadowColor: "#8B5CF6",
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.12,
+    shadowRadius: 8,
+    elevation: 4,
+  },
+  heading: {
+    fontSize: 11,
+    fontWeight: "800",
+    letterSpacing: 1.2,
+    marginBottom: 16,
+  },
+  ringRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 20,
+  },
+  ringCenter: {
+    alignItems: "center",
+    gap: 2,
+  },
+  ringFrac: {
+    fontSize: 13,
+    fontWeight: "800",
+  },
+  info: {
+    flex: 1,
+    gap: 4,
+  },
+  level: {
+    fontSize: 15,
+    fontWeight: "700",
+  },
+  msg: {
+    fontSize: 12,
+    lineHeight: 17,
   },
 });

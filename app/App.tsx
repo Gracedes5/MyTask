@@ -77,7 +77,7 @@ function Tabs() {
         >
           <Ionicons name="menu" size={22} color={colors.white} />
         </TouchableOpacity>
-        <Text style={[s.menuTitle, { color: colors.white }]}>MyTask</Text>
+        <Text style={[s.menuTitle, { color: colors.white }]}>Taskly</Text>
         <TouchableOpacity
           onPress={() => setSettingsVisible(true)}
           style={s.settingsBtn}
@@ -238,7 +238,7 @@ function Tabs() {
                 />
               </View>
               <Text style={[s.menuItemTxt, { color: colors.text }]}>
-                About MyTask
+                About Taskly
               </Text>
               <Ionicons
                 name="chevron-forward"
@@ -367,7 +367,7 @@ function Tabs() {
             >
               <View style={s.settingsAboutRow}>
                 <Text style={[s.settingsAbout, { color: colors.muted }]}>
-                  About MyTask
+                  About Taskly
                 </Text>
                 <Ionicons
                   name={aboutExpanded ? "chevron-up" : "chevron-forward"}
@@ -383,7 +383,7 @@ function Tabs() {
                       { color: colors.mutedLight, marginTop: 4 },
                     ]}
                   >
-                    MyTask v1.0
+                    Taskly v1.0
                   </Text>
                   <Text style={[s.settingsDesc, { color: colors.muted }]}>
                     A simple productivity app, helps you organize,{"\n"}

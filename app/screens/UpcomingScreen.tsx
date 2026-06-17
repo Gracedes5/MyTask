@@ -1,5 +1,7 @@
 // screens/UpcomingScreen.tsx
 import { Ionicons } from "@expo/vector-icons";
+import { useNavigation } from "@react-navigation/native";
+import { BottomTabNavigationProp } from "@react-navigation/bottom-tabs";
 import React, { useState } from "react";
 import {
   FlatList,
@@ -15,6 +17,7 @@ import {
   View,
 } from "react-native";
 import { C } from "../../constants/theme";
+import type { TabParamList } from "../App";
 import { Task, useTasks } from "../context/TaskContext";
 import { useTheme } from "../context/ThemeContext";
 
@@ -60,6 +63,7 @@ type Section = { day: string; data: Task[] };
 export default function UpcomingScreen() {
   const { tasks, toggleDone, editTask, deleteTask } = useTasks();
   const { colors, isDark } = useTheme();
+  const navigation = useNavigation<BottomTabNavigationProp<TabParamList>>();
   const todayName = DAYS[new Date().getDay()];
 
   // useState for modal form (State management requirement)
@@ -155,11 +159,7 @@ export default function UpcomingScreen() {
                   <View
                     key={task.id}
                     style={[
-                      isToday
-                        ? isDark
-                          ? s.cardTodayDark
-                          : s.cardToday
-                        : s.card,
+                      s.card,
                       {
                         backgroundColor: isToday
                           ? isDark
@@ -173,21 +173,14 @@ export default function UpcomingScreen() {
                           : colors.border,
                       },
                       task.done &&
-                        (isToday
-                          ? isDark
-                            ? s.cardDoneTodayDark
-                            : s.cardDoneToday
-                          : s.cardDone),
+                        (isDark ? s.cardDoneDark : s.cardDone),
                     ]}
                   >
                     <View
                       style={[
-                        isToday ? s.accentToday : s.accent,
+                        s.accent,
                         { backgroundColor: colors.primary },
-                        task.done &&
-                          (isToday
-                            ? { backgroundColor: colors.success }
-                            : s.accentDone),
+                        task.done && { backgroundColor: colors.success },
                       ]}
                     />
 
@@ -201,7 +194,7 @@ export default function UpcomingScreen() {
                         <Ionicons
                           name="checkmark-circle"
                           size={22}
-                          color={isToday ? colors.success : colors.primary}
+                          color={colors.success}
                         />
                       ) : (
                         <Ionicons
@@ -217,8 +210,7 @@ export default function UpcomingScreen() {
                         style={[
                           s.cardTitle,
                           { color: colors.text },
-                          task.done &&
-                            (isToday ? s.cardTitleDoneToday : s.cardTitleDone),
+                          task.done && s.cardTitleDone,
                         ]}
                       >
                         {task.title}
@@ -266,29 +258,34 @@ export default function UpcomingScreen() {
         />
       )}
 
-      {/* ── Done count badge ── */}
+      {/* ── Done count badge (tappable → Search tab) ── */}
       {doneCount > 0 && (
         <View style={s.badgeWrap}>
-          <View
-            style={[
-              s.badge,
-              {
-                backgroundColor: isDark ? "#1A3020" : "#EEF8F0",
-                borderColor: isDark ? "#2D6A4F" : "#C8E6C9",
-              },
-            ]}
+          <TouchableOpacity
+            activeOpacity={0.75}
+            onPress={() => navigation.navigate("Search")}
           >
-            <Ionicons
-              name="checkmark-done-circle"
-              size={16}
-              color={colors.success}
-            />
-            <Text
-              style={[s.badgeTxt, { color: isDark ? "#4ADE80" : "#2D6A4F" }]}
+            <View
+              style={[
+                s.badge,
+                {
+                  backgroundColor: isDark ? "#1A3020" : "#EEF8F0",
+                  borderColor: isDark ? "#2D6A4F" : "#C8E6C9",
+                },
+              ]}
             >
-              {doneCount} task{doneCount > 1 ? "s" : ""} completed
-            </Text>
-          </View>
+              <Ionicons
+                name="checkmark-done-circle"
+                size={16}
+                color={colors.success}
+              />
+              <Text
+                style={[s.badgeTxt, { color: isDark ? "#4ADE80" : "#2D6A4F" }]}
+              >
+                {doneCount} task{doneCount > 1 ? "s" : ""} completed
+              </Text>
+            </View>
+          </TouchableOpacity>
         </View>
       )}
 
@@ -616,40 +613,15 @@ const s = StyleSheet.create({
     shadowRadius: 6,
     elevation: 3,
   },
-  cardDone: { opacity: 0.5 },
-  cardToday: {
-    borderRadius: 14,
-    padding: 13,
-    marginBottom: 9,
-    flexDirection: "row",
-    alignItems: "flex-start",
-    borderWidth: 1,
-    overflow: "hidden",
-    shadowColor: "#8B5CF6",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 6,
-    elevation: 3,
-  },
-  cardTodayDark: {},
-  cardDoneToday: {
+  cardDone: {
     backgroundColor: "#EEF8F0",
     borderColor: "#C8E6C9",
   },
-  cardDoneTodayDark: {
+  cardDoneDark: {
     backgroundColor: "#1A3020",
     borderColor: "#2D6A4F",
   },
   accent: {
-    position: "absolute",
-    left: 0,
-    top: 0,
-    bottom: 0,
-    width: 3,
-    borderRadius: 3,
-  },
-  accentDone: { opacity: 0.4 },
-  accentToday: {
     position: "absolute",
     left: 0,
     top: 0,
@@ -664,8 +636,7 @@ const s = StyleSheet.create({
     fontWeight: "600",
     lineHeight: 21,
   },
-  cardTitleDone: { textDecorationLine: "line-through", color: "#8B7EB8" },
-  cardTitleDoneToday: { textDecorationLine: "line-through", color: "#6B9B78" },
+  cardTitleDone: { textDecorationLine: "line-through", color: "#6B9B78" },
   cardDesc: { fontSize: 12, marginTop: 3 },
   cardTime: { fontSize: 11, marginTop: 5 },
   actions: { flexDirection: "row", gap: 2, marginLeft: 6 },
