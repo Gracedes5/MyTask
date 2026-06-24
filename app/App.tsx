@@ -2,13 +2,18 @@ import { Ionicons } from "@expo/vector-icons";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import {
   NavigationContainer,
-  NavigatorScreenParams,
+  useNavigation,
   useRoute,
 } from "@react-navigation/native";
+import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import * as ImagePicker from "expo-image-picker";
 import { StatusBar } from "expo-status-bar";
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import {
+  Alert,
+  Image,
   Modal,
   SafeAreaView,
   StyleSheet,
@@ -21,20 +26,14 @@ import { TaskProvider, useTasks } from "./context/TaskContext";
 import { ThemeProvider, useTheme } from "./context/ThemeContext";
 
 import AddTaskScreen from "./screens/AddTaskScreen";
+import CreateAccountScreen from "./screens/CreateAccountScreen";
+import LoginScreen from "./screens/LoginScreen";
 import SearchScreen from "./screens/SearchScreen";
+import SplashScreen from "./screens/SplashScreen";
 import TodayScreen from "./screens/TodayScreen";
 import UpcomingScreen from "./screens/UpcomingScreen";
-
-export type TabParamList = {
-  Today: undefined;
-  Upcoming: undefined;
-  Search: undefined;
-};
-
-export type RootStackParamList = {
-  Tabs: NavigatorScreenParams<TabParamList>;
-  AddTask: undefined;
-};
+import WelcomeScreen from "./screens/WelcomeScreen";
+import type { RootStackParamList, TabParamList } from "./types";
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 const Tab = createBottomTabNavigator<TabParamList>();
@@ -43,6 +42,8 @@ function Tabs() {
   const { tasks, deleteTask } = useTasks();
   const { colors, isDark, toggleDarkMode } = useTheme();
   const route = useRoute();
+  const rootNavigation =
+    useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const routeScreen =
     (route.params as { screen?: keyof TabParamList })?.screen || "Today";
   const [initialTab, setInitialTab] = useState<keyof TabParamList>(
@@ -56,12 +57,47 @@ function Tabs() {
     }
   }, [route.params, initialTab]);
 
-  const [menuOpen, setMenuOpen] = useState(false);
+  const [profileOpen, setProfileOpen] = useState(false);
   const [settingsVisible, setSettingsVisible] = useState(false);
   const [notifEnabled, setNotifEnabled] = useState(true);
   const [reminderEnabled, setReminderEnabled] = useState(true);
   const [summaryEnabled, setSummaryEnabled] = useState(false);
   const [aboutExpanded, setAboutExpanded] = useState(false);
+
+  const [profileImage, setProfileImage] = useState<string | null>(null);
+  const [profileName, setProfileName] = useState("User");
+  const [profileUsername, setProfileUsername] = useState("");
+
+  useEffect(() => {
+    AsyncStorage.multiGet(["profileImage", "profileName", "profileUsername"]).then(
+      ([img, name, uname]) => {
+        if (img[1]) setProfileImage(img[1]);
+        if (name[1]) setProfileName(name[1]);
+        if (uname[1]) setProfileUsername(uname[1]);
+      },
+    );
+  }, []);
+
+  const pickImage = useCallback(async () => {
+    const perm = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (!perm.granted) return;
+    const result = await ImagePicker.launchImageLibraryAsync({
+      allowsEditing: true,
+      aspect: [1, 1],
+      quality: 0.8,
+    });
+    if (!result.canceled && result.assets[0]?.uri) {
+      const uri = result.assets[0].uri;
+      setProfileImage(uri);
+      await AsyncStorage.setItem("profileImage", uri);
+    }
+  }, []);
+
+  const handleLogout = useCallback(async () => {
+    await AsyncStorage.multiRemove(["isLoggedIn", "profileName", "profileUsername"]);
+    setSettingsVisible(false);
+    rootNavigation.replace("Login");
+  }, [rootNavigation]);
 
   return (
     <>
@@ -71,11 +107,15 @@ function Tabs() {
       {/* ── Menu bar ── */}
       <View style={[s.menuBar, { backgroundColor: colors.primary }]}>
         <TouchableOpacity
-          onPress={() => setMenuOpen(true)}
-          style={s.menuBtn}
+          onPress={() => setProfileOpen(true)}
+          style={s.profileBtn}
           activeOpacity={0.7}
         >
-          <Ionicons name="menu" size={22} color={colors.white} />
+          {profileImage ? (
+            <Image source={{ uri: profileImage }} style={s.profileBtnImg} />
+          ) : (
+            <Ionicons name="person-circle-outline" size={24} color={colors.white} />
+          )}
         </TouchableOpacity>
         <Text style={[s.menuTitle, { color: colors.white }]}>Taskly</Text>
         <TouchableOpacity
@@ -116,17 +156,17 @@ function Tabs() {
         <Tab.Screen name="Search" component={SearchScreen} />
       </Tab.Navigator>
 
-      {/* ── Menu modal ── */}
+      {/* ── Profile modal ── */}
       <Modal
-        visible={menuOpen}
+        visible={profileOpen}
         transparent
         animationType="fade"
-        onRequestClose={() => setMenuOpen(false)}
+        onRequestClose={() => setProfileOpen(false)}
       >
         <TouchableOpacity
           style={s.overlay}
           activeOpacity={1}
-          onPress={() => setMenuOpen(false)}
+          onPress={() => setProfileOpen(false)}
         >
           <SafeAreaView
             style={[
@@ -137,115 +177,90 @@ function Tabs() {
             <View
               style={[s.menuHandle, { backgroundColor: colors.mutedLight }]}
             />
-            <Text style={[s.menuHdr, { color: colors.text }]}>Menu</Text>
+            <Text style={[s.menuHdr, { color: colors.text }]}>Profile</Text>
 
-            <TouchableOpacity
-              style={[s.menuItem, { borderBottomColor: colors.border }]}
-              onPress={() => {
-                setMenuOpen(false);
-                setSettingsVisible(true);
-              }}
-              activeOpacity={0.7}
-            >
-              <View
-                style={[s.menuItemIcon, { backgroundColor: colors.highlight }]}
-              >
-                <Ionicons
-                  name="notifications-outline"
-                  size={18}
-                  color={colors.primary}
-                />
-              </View>
-              <Text style={[s.menuItemTxt, { color: colors.text }]}>
-                Notifications
-              </Text>
-              <Ionicons
-                name="chevron-forward"
-                size={14}
-                color={colors.mutedLight}
-              />
-            </TouchableOpacity>
+            <View style={s.profileAvatarWrap}>
+              <TouchableOpacity onPress={pickImage} activeOpacity={0.8}>
+                <View
+                  style={[
+                    s.profileAvatar,
+                    { backgroundColor: colors.highlight },
+                  ]}
+                >
+                  {profileImage ? (
+                    <Image
+                      source={{ uri: profileImage }}
+                      style={s.profileAvatarImg}
+                    />
+                  ) : (
+                    <Ionicons
+                      name="person"
+                      size={40}
+                      color={colors.primary}
+                    />
+                  )}
+                </View>
+                <View
+                  style={[
+                    s.profileAvatarBadge,
+                    { backgroundColor: colors.primary },
+                  ]}
+                >
+                  <Ionicons name="camera" size={14} color={colors.white} />
+                </View>
+              </TouchableOpacity>
+            </View>
 
-            <TouchableOpacity
-              style={[s.menuItem, { borderBottomColor: colors.border }]}
-              onPress={() => {
-                setMenuOpen(false);
-                setSettingsVisible(true);
-              }}
-              activeOpacity={0.7}
-            >
-              <View
-                style={[s.menuItemIcon, { backgroundColor: colors.highlight }]}
-              >
-                <Ionicons
-                  name="stats-chart-outline"
-                  size={18}
-                  color={colors.primary}
-                />
-              </View>
-              <Text style={[s.menuItemTxt, { color: colors.text }]}>
-                Task Summary
+            <Text style={[s.profileName, { color: colors.text }]}>
+              {profileName}
+            </Text>
+            {profileUsername ? (
+              <Text style={[s.profileJoin, { color: colors.muted }]}>
+                @{profileUsername}
               </Text>
-              <Ionicons
-                name="chevron-forward"
-                size={14}
-                color={colors.mutedLight}
-              />
-            </TouchableOpacity>
+            ) : null}
 
-            <TouchableOpacity
-              style={[s.menuItem, { borderBottomColor: colors.border }]}
-              onPress={() => {
-                setMenuOpen(false);
-                tasks.filter((t) => t.done).forEach((t) => deleteTask(t.id));
-              }}
-              activeOpacity={0.7}
+            <View
+              style={[
+                s.profileStatsRow,
+                {
+                  backgroundColor: colors.highlight,
+                  borderColor: colors.border,
+                },
+              ]}
             >
-              <View
-                style={[s.menuItemIcon, { backgroundColor: colors.highlight }]}
-              >
-                <Ionicons
-                  name="trash-outline"
-                  size={18}
-                  color={colors.danger}
-                />
+              <View style={s.profileStat}>
+                <Text style={[s.profileStatNum, { color: colors.text }]}>
+                  {tasks.length}
+                </Text>
+                <Text style={[s.profileStatLabel, { color: colors.muted }]}>
+                  Total
+                </Text>
               </View>
-              <Text style={[s.menuItemTxt, { color: colors.text }]}>
-                Clear Completed Tasks
-              </Text>
-              <Ionicons
-                name="chevron-forward"
-                size={14}
-                color={colors.mutedLight}
-              />
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={[s.menuItem, { borderBottomColor: colors.border }]}
-              onPress={() => {
-                setMenuOpen(false);
-                setSettingsVisible(true);
-              }}
-              activeOpacity={0.7}
-            >
-              <View
-                style={[s.menuItemIcon, { backgroundColor: colors.highlight }]}
-              >
-                <Ionicons
-                  name="information-circle-outline"
-                  size={18}
-                  color={colors.primary}
-                />
+              <View style={[s.profileStatDiv, { backgroundColor: colors.border }]} />
+              <View style={s.profileStat}>
+                <Text style={[s.profileStatNum, { color: colors.text }]}>
+                  {tasks.filter((t) => t.done).length}
+                </Text>
+                <Text style={[s.profileStatLabel, { color: colors.muted }]}>
+                  Done
+                </Text>
               </View>
-              <Text style={[s.menuItemTxt, { color: colors.text }]}>
-                About Taskly
-              </Text>
-              <Ionicons
-                name="chevron-forward"
-                size={14}
-                color={colors.mutedLight}
-              />
-            </TouchableOpacity>
+              <View style={[s.profileStatDiv, { backgroundColor: colors.border }]} />
+              <View style={s.profileStat}>
+                <Text style={[s.profileStatNum, { color: colors.text }]}>
+                  {tasks.length > 0
+                    ? Math.round(
+                        (tasks.filter((t) => t.done).length / tasks.length) * 100,
+                      )
+                    : 0}
+                  %
+                </Text>
+                <Text style={[s.profileStatLabel, { color: colors.muted }]}>
+                  Rate
+                </Text>
+              </View>
+            </View>
           </SafeAreaView>
         </TouchableOpacity>
       </Modal>
@@ -392,6 +407,34 @@ function Tabs() {
                 </>
               )}
             </TouchableOpacity>
+
+            <View
+              style={[s.settingsDivider, { backgroundColor: colors.highlight }]}
+            />
+
+            <TouchableOpacity
+              style={s.settingsRow}
+              onPress={() => {
+                Alert.alert(
+                  "Logout",
+                  "Are you sure you want to logout?",
+                  [
+                    { text: "Cancel", style: "cancel" },
+                    { text: "Logout", style: "destructive", onPress: handleLogout },
+                  ],
+                );
+              }}
+              activeOpacity={0.7}
+            >
+              <Ionicons
+                name="log-out-outline"
+                size={20}
+                color={colors.danger}
+              />
+              <Text style={[s.settingsLabel, { color: colors.danger }]}>
+                Logout
+              </Text>
+            </TouchableOpacity>
           </SafeAreaView>
         </TouchableOpacity>
       </Modal>
@@ -407,12 +450,17 @@ const s = StyleSheet.create({
     paddingBottom: 12,
     paddingHorizontal: 16,
   },
-  menuBtn: {
+  profileBtn: {
     width: 36,
     height: 36,
-    borderRadius: 10,
+    borderRadius: 18,
     alignItems: "center",
     justifyContent: "center",
+  },
+  profileBtnImg: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
   },
   menuTitle: {
     fontSize: 19,
@@ -470,6 +518,68 @@ const s = StyleSheet.create({
     flex: 1,
     fontSize: 15,
     fontWeight: "600",
+  },
+
+  profileAvatarWrap: {
+    alignItems: "center",
+    marginBottom: 12,
+  },
+  profileAvatar: {
+    width: 72,
+    height: 72,
+    borderRadius: 36,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  profileAvatarImg: {
+    width: 72,
+    height: 72,
+    borderRadius: 36,
+  },
+  profileAvatarBadge: {
+    position: "absolute",
+    bottom: 0,
+    right: -2,
+    width: 26,
+    height: 26,
+    borderRadius: 13,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  profileName: {
+    fontSize: 20,
+    fontWeight: "800",
+    textAlign: "center",
+    marginBottom: 2,
+  },
+  profileJoin: {
+    fontSize: 12,
+    textAlign: "center",
+    marginBottom: 20,
+  },
+  profileStatsRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    borderRadius: 16,
+    borderWidth: 1,
+    paddingVertical: 16,
+  },
+  profileStat: {
+    flex: 1,
+    alignItems: "center",
+  },
+  profileStatNum: {
+    fontSize: 18,
+    fontWeight: "800",
+  },
+  profileStatLabel: {
+    fontSize: 11,
+    fontWeight: "600",
+    marginTop: 2,
+  },
+  profileStatDiv: {
+    width: 1,
+    height: 32,
   },
 
   settingsSheet: {
@@ -531,7 +641,14 @@ export default function App() {
     <ThemeProvider>
       <TaskProvider>
         <NavigationContainer>
-          <Stack.Navigator screenOptions={{ headerShown: false }}>
+          <Stack.Navigator
+            initialRouteName="Splash"
+            screenOptions={{ headerShown: false }}
+          >
+            <Stack.Screen name="Splash" component={SplashScreen} />
+            <Stack.Screen name="Welcome" component={WelcomeScreen} />
+            <Stack.Screen name="Login" component={LoginScreen} />
+            <Stack.Screen name="CreateAccount" component={CreateAccountScreen} />
             <Stack.Screen name="Tabs" component={Tabs} />
             <Stack.Screen name="AddTask" component={AddTaskScreen} />
           </Stack.Navigator>

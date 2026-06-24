@@ -126,18 +126,6 @@ function ProgressRing({
 
   return (
     <View style={{ width: size, height: size }}>
-      {/* Gray track */}
-      <View
-        style={{
-          position: "absolute",
-          width: size,
-          height: size,
-          borderRadius: half,
-          borderWidth: stroke,
-          borderColor: bgColor,
-        }}
-      />
-
       {/* Colored progress (always a full ring, progressively uncovered) */}
       <View
         style={{
@@ -150,7 +138,8 @@ function ProgressRing({
         }}
       />
 
-      {/* Right cover – hides/shows the right half of the colored ring */}
+      {/* Right cover – hides/shows the right half of the colored ring.
+          Uses bgColor so the covered portion looks like the "track". */}
       <View
         style={{
           position: "absolute",
@@ -178,7 +167,7 @@ function ProgressRing({
               top: 0,
               width: half,
               height: size,
-              backgroundColor: cardBg,
+              backgroundColor: bgColor,
             }}
           />
         </View>
@@ -212,7 +201,7 @@ function ProgressRing({
               top: 0,
               width: half,
               height: size,
-              backgroundColor: cardBg,
+              backgroundColor: bgColor,
             }}
           />
         </View>

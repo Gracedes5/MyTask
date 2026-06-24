@@ -33,19 +33,10 @@ export default function SearchScreen() {
     );
   }, [query, tasks]);
 
-  const doneTasks = useMemo(() => {
-    const now = new Date();
-    const dayOfWeek = now.getDay();
-    const weekStart = new Date(now);
-    weekStart.setDate(now.getDate() - dayOfWeek);
-    weekStart.setHours(0, 0, 0, 0);
-
-    return tasks.filter((t) => {
-      if (!t.done || !t.completedAt) return false;
-      const completed = new Date(t.completedAt);
-      return completed >= weekStart;
-    });
-  }, [tasks]);
+  const doneTasks = useMemo(
+    () => tasks.filter((t) => t.done),
+    [tasks],
+  );
 
   const showRecent = !query.trim();
   const showEmpty = !!query.trim() && results.length === 0;
@@ -142,7 +133,7 @@ export default function SearchScreen() {
               <Text
                 style={[s.doneHdr, { color: isDark ? "#4ADE80" : "#2D6A4F" }]}
               >
-                This Week · {doneTasks.length} task
+                Completed · {doneTasks.length} task
                 {doneTasks.length !== 1 ? "s" : ""}
               </Text>
               {doneTasks.map((task) => (
