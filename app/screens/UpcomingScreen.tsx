@@ -16,7 +16,6 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import AmbientBackground from "../../components/AmbientBackground";
 import NoteModal from "../../components/NoteModal";
 import { C } from "../../constants/theme";
 import type { TabParamList } from "../App";
@@ -113,8 +112,7 @@ export default function UpcomingScreen() {
   };
 
   return (
-    <AmbientBackground>
-      <SafeAreaView style={s.safe}>
+    <SafeAreaView style={[s.safe, { backgroundColor: colors.bg }]}>
       {/* ── Header ── */}
       <View style={s.header}>
         <Text style={[s.title, { color: colors.text }]}>Upcoming</Text>
@@ -231,19 +229,8 @@ export default function UpcomingScreen() {
                       ) : null}
                     </View>
 
-                    {/* Note / Edit / Delete buttons */}
+                    {/* Edit / Delete buttons (Interactive elements) */}
                     <View style={s.actions}>
-                      <TouchableOpacity
-                        style={s.actBtn}
-                        onPress={() => setNoteTaskId(task.id)}
-                        activeOpacity={0.7}
-                      >
-                        <Ionicons
-                          name={task.note ? "document-text" : "document-text-outline"}
-                          size={16}
-                          color={task.note ? colors.primary : colors.mutedLight}
-                        />
-                      </TouchableOpacity>
                       <TouchableOpacity
                         style={s.actBtn}
                         onPress={() => openEdit(task)}
@@ -262,6 +249,16 @@ export default function UpcomingScreen() {
                           name="trash-outline"
                           size={15}
                           color={colors.danger}
+                        />
+                      </TouchableOpacity>
+                      <TouchableOpacity
+                        style={s.actBtn}
+                        onPress={() => setNoteTaskId(task.id)}
+                      >
+                        <Ionicons
+                          name={task.note ? "document-text" : "document-text-outline"}
+                          size={15}
+                          color={task.note ? colors.primary : colors.mutedLight}
                         />
                       </TouchableOpacity>
                     </View>
@@ -303,6 +300,18 @@ export default function UpcomingScreen() {
           </TouchableOpacity>
         </View>
       )}
+
+      {/* ── Note modal ── */}
+      <NoteModal
+        visible={noteTaskId !== null}
+        initialNote={noteTaskId ? (tasks.find((t) => t.id === noteTaskId)?.note ?? "") : ""}
+        taskTitle={noteTaskId ? (tasks.find((t) => t.id === noteTaskId)?.title ?? "") : ""}
+        onSave={(n) => {
+          if (noteTaskId) updateTaskNote(noteTaskId, n);
+          setNoteTaskId(null);
+        }}
+        onCancel={() => setNoteTaskId(null)}
+      />
 
       {/* ── Edit Modal ── */}
       <Modal
@@ -487,18 +496,6 @@ export default function UpcomingScreen() {
         </KeyboardAvoidingView>
       </Modal>
 
-      {/* ── Note modal ── */}
-      <NoteModal
-        visible={noteTaskId !== null}
-        initialNote={noteTaskId ? (tasks.find((t) => t.id === noteTaskId)?.note ?? "") : ""}
-        taskTitle={noteTaskId ? (tasks.find((t) => t.id === noteTaskId)?.title ?? "") : ""}
-        onSave={(n) => {
-          if (noteTaskId) updateTaskNote(noteTaskId, n);
-          setNoteTaskId(null);
-        }}
-        onCancel={() => setNoteTaskId(null)}
-      />
-
       {/* ── Delete / Done prompt ── */}
       <Modal
         visible={actionTask !== null}
@@ -588,7 +585,6 @@ export default function UpcomingScreen() {
         </TouchableOpacity>
       </Modal>
     </SafeAreaView>
-    </AmbientBackground>
   );
 }
 
@@ -628,30 +624,26 @@ const s = StyleSheet.create({
   },
 
   card: {
-    borderRadius: 16,
-    padding: 14,
-    marginBottom: 10,
+    borderRadius: 14,
+    padding: 13,
+    marginBottom: 9,
     flexDirection: "row",
     alignItems: "flex-start",
     borderWidth: 1,
     overflow: "hidden",
     shadowColor: "#8B5CF6",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.08,
-    shadowRadius: 12,
-    elevation: 4,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 6,
+    elevation: 3,
   },
   cardDone: {
     backgroundColor: "#EEF8F0",
     borderColor: "#C8E6C9",
-    shadowColor: "#32C671",
-    shadowOpacity: 0.12,
   },
   cardDoneDark: {
     backgroundColor: "#1A3020",
     borderColor: "#2D6A4F",
-    shadowColor: "#4ADE80",
-    shadowOpacity: 0.1,
   },
   accent: {
     position: "absolute",

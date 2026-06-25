@@ -13,8 +13,6 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import AmbientBackground from "../../components/AmbientBackground";
-import GradientHeader from "../../components/GradientHeader";
 import NoteModal from "../../components/NoteModal";
 import { C } from "../../constants/theme";
 import type { RootStackParamList } from "../App";
@@ -100,16 +98,145 @@ function WelcomePopup({
   );
 }
 
+/* ── Circular progress ring ── */
+function ProgressRing({
+  pct,
+  size = 96,
+  stroke = 8,
+  color,
+  bgColor,
+  cardBg,
+  children,
+}: {
+  pct: number;
+  size?: number;
+  stroke?: number;
+  color: string;
+  bgColor: string;
+  cardBg: string;
+  children: React.ReactNode;
+}) {
+  const half = size / 2;
+  const innerSize = size - stroke * 2;
+  const clamped = Math.min(100, Math.max(0, pct));
+
+  // Right cover sweeps 0→180deg as progress goes 0→50%
+  const rightAngle = Math.min(180, (clamped / 50) * 180);
+  // Left cover sweeps 0→180deg as progress goes 50→100%
+  const leftAngle = Math.max(0, ((clamped - 50) / 50) * 180);
+
+  return (
+    <View style={{ width: size, height: size }}>
+      {/* Colored progress (always a full ring, progressively uncovered) */}
+      <View
+        style={{
+          position: "absolute",
+          width: size,
+          height: size,
+          borderRadius: half,
+          borderWidth: stroke,
+          borderColor: color,
+        }}
+      />
+
+      {/* Right cover – hides/shows the right half of the colored ring.
+          Uses bgColor so the covered portion looks like the "track". */}
+      <View
+        style={{
+          position: "absolute",
+          top: 0,
+          left: half,
+          width: half,
+          height: size,
+          overflow: "hidden",
+        }}
+      >
+        <View
+          style={{
+            position: "absolute",
+            left: -half,
+            top: 0,
+            width: half * 2,
+            height: size,
+            transform: [{ rotate: `${rightAngle}deg` }],
+          }}
+        >
+          <View
+            style={{
+              position: "absolute",
+              right: 0,
+              top: 0,
+              width: half,
+              height: size,
+              backgroundColor: bgColor,
+            }}
+          />
+        </View>
+      </View>
+
+      {/* Left cover – hides/shows the left half of the colored ring */}
+      <View
+        style={{
+          position: "absolute",
+          top: 0,
+          left: 0,
+          width: half,
+          height: size,
+          overflow: "hidden",
+        }}
+      >
+        <View
+          style={{
+            position: "absolute",
+            left: 0,
+            top: 0,
+            width: half * 2,
+            height: size,
+            transform: [{ rotate: `${leftAngle}deg` }],
+          }}
+        >
+          <View
+            style={{
+              position: "absolute",
+              left: 0,
+              top: 0,
+              width: half,
+              height: size,
+              backgroundColor: bgColor,
+            }}
+          />
+        </View>
+      </View>
+
+      {/* Center hole */}
+      <View
+        style={{
+          position: "absolute",
+          top: stroke,
+          left: stroke,
+          width: innerSize,
+          height: innerSize,
+          borderRadius: innerSize / 2,
+          backgroundColor: cardBg,
+          alignItems: "center",
+          justifyContent: "center",
+        }}
+      >
+        {children}
+      </View>
+    </View>
+  );
+}
+
 export default function TodayScreen() {
   const { tasks, toggleDone, deleteTask, updateTaskNote } = useTasks();
   const { colors, isDark } = useTheme();
   const navigation = useNavigation<Nav>();
 
   const [actionTaskId, setActionTaskId] = useState<string | null>(null);
+  const [noteTaskId, setNoteTaskId] = useState<string | null>(null);
   const [showWelcome, setShowWelcome] = useState(false);
   const [firstLaunch, setFirstLaunch] = useState(true);
-  const [noteTaskId, setNoteTaskId] = useState<string | null>(null);
-
   const actionTask = actionTaskId
     ? (tasks.find((t) => t.id === actionTaskId) ?? null)
     : null;
@@ -152,137 +279,169 @@ export default function TodayScreen() {
     return "Good Evening";
   };
 
-  return (
-    <AmbientBackground>
-      <SafeAreaView style={s.safe}>
+  const priorityCard = total > 0 && (
+    <View
+      style={[
+        pr.card,
+        {
+          backgroundColor: colors.card,
+          borderColor: colors.border,
+        },
+      ]}
+    >
+      <Text style={[pr.heading, { color: colors.primary }]}>
+        TODAY'S PRIORITY
+      </Text>
 
-        {/* ── Task list ── */}
-        {todayTasks.length === 0 ? (
-          <FlatList
-            data={[]}
-            keyExtractor={() => "0"}
-            renderItem={() => null}
-            ListHeaderComponent={
-              <View>
-                <GradientHeader
-                  greeting={greeting()}
-                  todayName={todayName}
-                  total={total}
-                  doneCount={doneCount}
-                  priorityLevel={priorityLevel}
-                  priorityMsg={priorityMsg}
-                  pct={pct}
-                />
-                <View style={s.empty}>
-                  <Ionicons
-                    name="calendar-outline"
-                    size={60}
-                    color={colors.mutedLight}
-                  />
-                  <Text style={[s.emptyTitle, { color: colors.text }]}>
-                    Don't You have a Task?
-                  </Text>
-                  <Text style={[s.emptySub, { color: colors.muted }]}>
-                    Tap + to add one
-                  </Text>
-                </View>
-              </View>
-            }
-            contentContainerStyle={s.list}
+      <View style={pr.ringRow}>
+        <ProgressRing
+          pct={pct}
+          size={88}
+          stroke={7}
+          color={colors.success}
+          bgColor={isDark ? "#2D6A4F" : "#C8E6C9"}
+          cardBg={colors.card}
+        >
+          <View style={pr.ringCenter}>
+            <Ionicons
+              name="flag"
+              size={16}
+              color={colors.success}
+            />
+            <Text style={[pr.ringFrac, { color: colors.text }]}>
+              {completed}/{total}
+            </Text>
+          </View>
+        </ProgressRing>
+
+        <View style={pr.info}>
+          <Text style={[pr.level, { color: colors.text }]}>
+            {priorityLevel}
+          </Text>
+          <Text style={[pr.msg, { color: colors.muted }]}>{priorityMsg}</Text>
+        </View>
+      </View>
+    </View>
+  );
+
+  return (
+    <SafeAreaView style={[s.safe, { backgroundColor: colors.bg }]}>
+      {/* ── Header ── */}
+      <View style={s.header}>
+        <Text style={[s.greeting, { color: colors.text }]}>
+          {greeting()} <Text style={s.wave}>👋</Text>
+        </Text>
+        <Text style={[s.title, { color: colors.text }]}>Today</Text>
+        <Text style={[s.subtitle, { color: colors.muted }]}>{todayName}</Text>
+      </View>
+
+      {/* ── Summary bar ── */}
+      <View style={s.summary}>
+        <Text style={[s.summaryTxt, { color: colors.muted }]}>
+          {todayTasks.length} task{todayTasks.length !== 1 ? "s" : ""}
+          {doneCount > 0 ? ` · ${doneCount} done` : ""}
+        </Text>
+      </View>
+
+      {/* ── Task list ── */}
+      {todayTasks.length === 0 ? (
+        <View style={s.empty}>
+          <Ionicons
+            name="calendar-outline"
+            size={60}
+            color={colors.mutedLight}
           />
-        ) : (
-          <FlatList
-            data={todayTasks}
-            keyExtractor={(item) => item.id}
-            contentContainerStyle={s.list}
-            showsVerticalScrollIndicator={true}
-            ListHeaderComponent={
-              <GradientHeader
-                greeting={greeting()}
-                todayName={todayName}
-                total={total}
-                doneCount={doneCount}
-                priorityLevel={priorityLevel}
-                priorityMsg={priorityMsg}
-                pct={pct}
-              />
-            }
-            renderItem={({ item }) => (
+          <Text style={[s.emptyTitle, { color: colors.text }]}>
+            Don't You have a Task?
+          </Text>
+          <Text style={[s.emptySub, { color: colors.muted }]}>
+            Tap + to add one
+          </Text>
+        </View>
+      ) : (
+        <FlatList
+          data={todayTasks}
+          keyExtractor={(item) => item.id}
+          contentContainerStyle={s.list}
+          showsVerticalScrollIndicator={true}
+          ListFooterComponent={priorityCard}
+          ListFooterComponentStyle={pr.footer}
+          renderItem={({ item }) => (
+            <View
+              style={[
+                s.card,
+                {
+                  backgroundColor: isDark ? colors.card : "#F3EFFF",
+                  borderColor: isDark ? colors.border : "#D8CCF0",
+                },
+                item.done && (isDark ? s.cardDoneDark : s.cardDone),
+              ]}
+            >
               <View
                 style={[
-                  s.card,
-                  {
-                    backgroundColor: isDark ? colors.card : "#FFFFFF",
-                    borderColor: isDark ? colors.border : "#E8E0F7",
-                  },
-                  item.done && (isDark ? s.cardDoneDark : s.cardDone),
+                  s.accent,
+                  { backgroundColor: colors.primary },
+                  item.done && { backgroundColor: colors.success },
                 ]}
+              />
+
+              <TouchableOpacity
+                style={s.checkbox}
+                onPress={() => setActionTaskId(item.id)}
+                activeOpacity={0.7}
               >
-                <View
-                  style={[
-                    s.accent,
-                    { backgroundColor: colors.primary },
-                    item.done && { backgroundColor: colors.success },
-                  ]}
-                />
-
-                <TouchableOpacity
-                  style={s.checkbox}
-                  onPress={() => setActionTaskId(item.id)}
-                  activeOpacity={0.7}
-                >
-                  {item.done ? (
-                    <Ionicons
-                      name="checkmark-circle"
-                      size={22}
-                      color={colors.success}
-                    />
-                  ) : (
-                    <Ionicons
-                      name="ellipse-outline"
-                      size={22}
-                      color={colors.muted}
-                    />
-                  )}
-                </TouchableOpacity>
-
-                <View style={s.cardBody}>
-                  <Text
-                    style={[
-                      s.cardTitle,
-                      { color: colors.text },
-                      item.done && s.cardTitleDone,
-                    ]}
-                  >
-                    {item.title}
-                  </Text>
-                  {item.description ? (
-                    <Text style={[s.cardDesc, { color: colors.muted }]}>
-                      {item.description}
-                    </Text>
-                  ) : null}
-                  {item.time ? (
-                    <Text style={[s.cardTime, { color: colors.muted }]}>
-                      ⏰ {item.time}
-                    </Text>
-                  ) : null}
-                </View>
-
-                <TouchableOpacity
-                  style={s.noteBtn}
-                  onPress={() => setNoteTaskId(item.id)}
-                  activeOpacity={0.7}
-                >
+                {item.done ? (
                   <Ionicons
-                    name={item.note ? "document-text" : "document-text-outline"}
-                    size={18}
-                    color={item.note ? colors.primary : colors.mutedLight}
+                    name="checkmark-circle"
+                    size={22}
+                    color={colors.success}
                   />
-                </TouchableOpacity>
+                ) : (
+                  <Ionicons
+                    name="ellipse-outline"
+                    size={22}
+                    color={colors.muted}
+                  />
+                )}
+              </TouchableOpacity>
+
+              <View style={s.cardBody}>
+                <Text
+                  style={[
+                    s.cardTitle,
+                    { color: colors.text },
+                    item.done && s.cardTitleDone,
+                  ]}
+                >
+                  {item.title}
+                </Text>
+                {item.description ? (
+                  <Text style={[s.cardDesc, { color: colors.muted }]}>
+                    {item.description}
+                  </Text>
+                ) : null}
+                {item.time ? (
+                  <Text style={[s.cardTime, { color: colors.muted }]}>
+                    ⏰ {item.time}
+                  </Text>
+                ) : null}
               </View>
-            )}
-          />
-        )}
+
+              <TouchableOpacity
+                style={s.noteBtn}
+                onPress={() => setNoteTaskId(item.id)}
+                activeOpacity={0.7}
+              >
+                <Ionicons
+                  name={item.note ? "document-text" : "document-text-outline"}
+                  size={18}
+                  color={item.note ? colors.primary : colors.mutedLight}
+                />
+              </TouchableOpacity>
+            </View>
+          )}
+        />
+      )}
 
       {/* ── Floating add button ── */}
       <TouchableOpacity
@@ -413,12 +572,35 @@ export default function TodayScreen() {
         </TouchableOpacity>
       </Modal>
     </SafeAreaView>
-    </AmbientBackground>
   );
 }
 
 const s = StyleSheet.create({
   safe: { flex: 1 },
+  header: {
+    paddingHorizontal: 20,
+    paddingTop: 18,
+    paddingBottom: 4,
+  },
+  greeting: {
+    fontSize: 22,
+    fontWeight: "800",
+    letterSpacing: -0.4,
+    marginBottom: 2,
+  },
+  wave: {
+    fontSize: 24,
+  },
+  title: {
+    fontSize: 26,
+    fontWeight: "800",
+    letterSpacing: -0.4,
+  },
+  subtitle: {
+    fontSize: 13,
+    marginTop: 2,
+    fontWeight: "600",
+  },
   fab: {
     position: "absolute",
     bottom: 24,
@@ -432,6 +614,15 @@ const s = StyleSheet.create({
     shadowOpacity: 0.5,
     shadowRadius: 12,
     elevation: 10,
+  },
+  summary: {
+    paddingHorizontal: 20,
+    paddingBottom: 12,
+    paddingTop: 8,
+  },
+  summaryTxt: {
+    fontSize: 12,
+    fontWeight: "700",
   },
   empty: {
     flex: 1,
@@ -447,30 +638,26 @@ const s = StyleSheet.create({
   emptySub: { fontSize: 13, marginTop: 6 },
   list: { paddingHorizontal: 18, paddingBottom: 100 },
   card: {
-    borderRadius: 16,
-    padding: 14,
-    marginBottom: 10,
+    borderRadius: 14,
+    padding: 13,
+    marginBottom: 9,
     flexDirection: "row",
     alignItems: "flex-start",
     borderWidth: 1,
     overflow: "hidden",
     shadowColor: "#8B5CF6",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.08,
-    shadowRadius: 12,
-    elevation: 4,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 6,
+    elevation: 3,
   },
   cardDone: {
     backgroundColor: "#EEF8F0",
     borderColor: "#C8E6C9",
-    shadowColor: "#32C671",
-    shadowOpacity: 0.12,
   },
   cardDoneDark: {
     backgroundColor: "#1A3020",
     borderColor: "#2D6A4F",
-    shadowColor: "#4ADE80",
-    shadowOpacity: 0.1,
   },
   accent: {
     position: "absolute",
@@ -482,6 +669,7 @@ const s = StyleSheet.create({
   },
   checkbox: { marginLeft: 8, marginRight: 10, marginTop: 1 },
   cardBody: { flex: 1 },
+  noteBtn: { padding: 10, justifyContent: "center", alignItems: "center" },
   cardTitle: {
     fontSize: 14,
     fontWeight: "600",
@@ -490,7 +678,6 @@ const s = StyleSheet.create({
   cardTitleDone: { textDecorationLine: "line-through", color: "#6B9B78" },
   cardDesc: { fontSize: 12, marginTop: 3 },
   cardTime: { fontSize: 11, marginTop: 5 },
-  noteBtn: { padding: 6, borderRadius: 8, marginLeft: 4 },
 
   overlay: {
     flex: 1,
@@ -674,4 +861,50 @@ const wp = StyleSheet.create({
   },
 });
 
-
+const pr = StyleSheet.create({
+  footer: {
+    paddingBottom: 8,
+  },
+  card: {
+    borderRadius: 18,
+    borderWidth: 1,
+    padding: 20,
+    marginTop: 4,
+    shadowColor: "#8B5CF6",
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.12,
+    shadowRadius: 8,
+    elevation: 4,
+  },
+  heading: {
+    fontSize: 11,
+    fontWeight: "800",
+    letterSpacing: 1.2,
+    marginBottom: 16,
+  },
+  ringRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 20,
+  },
+  ringCenter: {
+    alignItems: "center",
+    gap: 2,
+  },
+  ringFrac: {
+    fontSize: 13,
+    fontWeight: "800",
+  },
+  info: {
+    flex: 1,
+    gap: 4,
+  },
+  level: {
+    fontSize: 15,
+    fontWeight: "700",
+  },
+  msg: {
+    fontSize: 12,
+    lineHeight: 17,
+  },
+});

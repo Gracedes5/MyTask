@@ -11,7 +11,6 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import AmbientBackground from "../../components/AmbientBackground";
 import { useTasks } from "../context/TaskContext";
 import { useTheme } from "../context/ThemeContext";
 
@@ -44,8 +43,7 @@ export default function SearchScreen() {
   const showResults = results.length > 0;
 
   return (
-    <AmbientBackground>
-      <SafeAreaView style={s.safe}>
+    <SafeAreaView style={[s.safe, { backgroundColor: colors.bg }]}>
       {/* ── Header ── */}
       <View style={s.header}>
         <Text style={[s.title, { color: colors.text }]}>Search</Text>
@@ -347,7 +345,6 @@ export default function SearchScreen() {
         />
       )}
     </SafeAreaView>
-    </AmbientBackground>
   );
 }
 
@@ -464,30 +461,36 @@ const s = StyleSheet.create({
   },
 
   card: {
-    borderRadius: 16,
-    padding: 14,
-    marginBottom: 10,
+    borderRadius: 14,
+    padding: 13,
+    marginBottom: 9,
     flexDirection: "row",
     alignItems: "flex-start",
     borderWidth: 1,
     overflow: "hidden",
     shadowColor: "#8B5CF6",
-    shadowOffset: { width: 0, height: 4 },
+    shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.08,
-    shadowRadius: 12,
-    elevation: 4,
+    shadowRadius: 5,
+    elevation: 3,
   },
   cardDone: {
     backgroundColor: "#EEF8F0",
     borderColor: "#C8E6C9",
     shadowColor: "#32C671",
-    shadowOpacity: 0.12,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.15,
+    shadowRadius: 6,
+    elevation: 4,
   },
   cardDoneDark: {
     backgroundColor: "#1A3020",
     borderColor: "#2D6A4F",
     shadowColor: "#4ADE80",
-    shadowOpacity: 0.1,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.15,
+    shadowRadius: 6,
+    elevation: 4,
   },
   accent: {
     position: "absolute",
