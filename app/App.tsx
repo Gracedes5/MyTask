@@ -1,4 +1,5 @@
 import { Ionicons } from "@expo/vector-icons";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import {
   NavigationContainer,
@@ -7,7 +8,6 @@ import {
 } from "@react-navigation/native";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as ImagePicker from "expo-image-picker";
 import { StatusBar } from "expo-status-bar";
 import React, { useCallback, useEffect, useState } from "react";
@@ -69,13 +69,15 @@ function Tabs() {
   const [profileUsername, setProfileUsername] = useState("");
 
   useEffect(() => {
-    AsyncStorage.multiGet(["profileImage", "profileName", "profileUsername"]).then(
-      ([img, name, uname]) => {
-        if (img[1]) setProfileImage(img[1]);
-        if (name[1]) setProfileName(name[1]);
-        if (uname[1]) setProfileUsername(uname[1]);
-      },
-    );
+    AsyncStorage.multiGet([
+      "profileImage",
+      "profileName",
+      "profileUsername",
+    ]).then(([img, name, uname]) => {
+      if (img[1]) setProfileImage(img[1]);
+      if (name[1]) setProfileName(name[1]);
+      if (uname[1]) setProfileUsername(uname[1]);
+    });
   }, []);
 
   const pickImage = useCallback(async () => {
@@ -94,9 +96,8 @@ function Tabs() {
   }, []);
 
   const handleLogout = useCallback(async () => {
-    await AsyncStorage.multiRemove(["isLoggedIn", "profileName", "profileUsername"]);
     setSettingsVisible(false);
-    rootNavigation.replace("Login");
+    rootNavigation.replace("Welcome");
   }, [rootNavigation]);
 
   return (
@@ -114,7 +115,11 @@ function Tabs() {
           {profileImage ? (
             <Image source={{ uri: profileImage }} style={s.profileBtnImg} />
           ) : (
-            <Ionicons name="person-circle-outline" size={24} color={colors.white} />
+            <Ionicons
+              name="person-circle-outline"
+              size={24}
+              color={colors.white}
+            />
           )}
         </TouchableOpacity>
         <Text style={[s.menuTitle, { color: colors.white }]}>Taskly</Text>
@@ -193,11 +198,7 @@ function Tabs() {
                       style={s.profileAvatarImg}
                     />
                   ) : (
-                    <Ionicons
-                      name="person"
-                      size={40}
-                      color={colors.primary}
-                    />
+                    <Ionicons name="person" size={40} color={colors.primary} />
                   )}
                 </View>
                 <View
@@ -212,9 +213,11 @@ function Tabs() {
             </View>
 
             <Text style={[s.profileName, { color: colors.text }]}>
-              {profileName}
+              {profileName === "User" && profileUsername
+                ? profileUsername
+                : profileName}
             </Text>
-            {profileUsername ? (
+            {profileUsername && profileName !== "User" ? (
               <Text style={[s.profileJoin, { color: colors.muted }]}>
                 @{profileUsername}
               </Text>
@@ -237,7 +240,9 @@ function Tabs() {
                   Total
                 </Text>
               </View>
-              <View style={[s.profileStatDiv, { backgroundColor: colors.border }]} />
+              <View
+                style={[s.profileStatDiv, { backgroundColor: colors.border }]}
+              />
               <View style={s.profileStat}>
                 <Text style={[s.profileStatNum, { color: colors.text }]}>
                   {tasks.filter((t) => t.done).length}
@@ -246,12 +251,15 @@ function Tabs() {
                   Done
                 </Text>
               </View>
-              <View style={[s.profileStatDiv, { backgroundColor: colors.border }]} />
+              <View
+                style={[s.profileStatDiv, { backgroundColor: colors.border }]}
+              />
               <View style={s.profileStat}>
                 <Text style={[s.profileStatNum, { color: colors.text }]}>
                   {tasks.length > 0
                     ? Math.round(
-                        (tasks.filter((t) => t.done).length / tasks.length) * 100,
+                        (tasks.filter((t) => t.done).length / tasks.length) *
+                          100,
                       )
                     : 0}
                   %
@@ -415,14 +423,14 @@ function Tabs() {
             <TouchableOpacity
               style={s.settingsRow}
               onPress={() => {
-                Alert.alert(
-                  "Logout",
-                  "Are you sure you want to logout?",
-                  [
-                    { text: "Cancel", style: "cancel" },
-                    { text: "Logout", style: "destructive", onPress: handleLogout },
-                  ],
-                );
+                Alert.alert("Logout", "Are you sure you want to logout?", [
+                  { text: "Cancel", style: "cancel" },
+                  {
+                    text: "Logout",
+                    style: "destructive",
+                    onPress: handleLogout,
+                  },
+                ]);
               }}
               activeOpacity={0.7}
             >
@@ -642,13 +650,16 @@ export default function App() {
       <TaskProvider>
         <NavigationContainer>
           <Stack.Navigator
-            initialRouteName="Splash"
+            initialRouteName="Welcome"
             screenOptions={{ headerShown: false }}
           >
-            <Stack.Screen name="Splash" component={SplashScreen} />
             <Stack.Screen name="Welcome" component={WelcomeScreen} />
+            <Stack.Screen name="Splash" component={SplashScreen} />
             <Stack.Screen name="Login" component={LoginScreen} />
-            <Stack.Screen name="CreateAccount" component={CreateAccountScreen} />
+            <Stack.Screen
+              name="CreateAccount"
+              component={CreateAccountScreen}
+            />
             <Stack.Screen name="Tabs" component={Tabs} />
             <Stack.Screen name="AddTask" component={AddTaskScreen} />
           </Stack.Navigator>

@@ -9,6 +9,7 @@ export type Task = {
   time: string;
   done: boolean;
   completedAt?: string;
+  note?: string;
 };
 
 type TaskContextType = {
@@ -17,6 +18,7 @@ type TaskContextType = {
   toggleDone: (id: string) => void;
   editTask: (id: string, updates: Partial<Omit<Task, "id">>) => void;
   deleteTask: (id: string) => void;
+  updateTaskNote: (id: string, note: string) => void;
 };
 
 const TaskContext = createContext<TaskContextType | null>(null);
@@ -67,8 +69,13 @@ export function TaskProvider({ children }: { children: React.ReactNode }) {
   const deleteTask = (id: string) =>
     setTasks((prev) => prev.filter((t) => t.id !== id));
 
+  const updateTaskNote = (id: string, note: string) =>
+    setTasks((prev) =>
+      prev.map((t) => (t.id === id ? { ...t, note } : t)),
+    );
+
   return (
-    <TaskContext.Provider value={{ tasks, addTask, toggleDone, editTask, deleteTask }}>
+    <TaskContext.Provider value={{ tasks, addTask, toggleDone, editTask, deleteTask, updateTaskNote }}>
       {children}
     </TaskContext.Provider>
   );

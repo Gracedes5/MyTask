@@ -26,7 +26,10 @@ export default function LoginScreen() {
   const [showPassword, setShowPassword] = useState(false);
 
   const handleLogin = async () => {
-    await AsyncStorage.setItem("isLoggedIn", "true");
+    await AsyncStorage.multiSet([
+      ["isLoggedIn", "true"],
+      ["profileUsername", username.trim() || "guest"],
+    ]);
     navigation.replace("Splash");
   };
 
