@@ -13,6 +13,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import IconBackground from "../../components/IconBackground";
 import NoteModal from "../../components/NoteModal";
 import { C } from "../../constants/theme";
 import type { RootStackParamList } from "../App";
@@ -325,7 +326,8 @@ export default function TodayScreen() {
   );
 
   return (
-    <SafeAreaView style={[s.safe, { backgroundColor: colors.bg }]}>
+    <IconBackground>
+      <SafeAreaView style={[s.safe, { backgroundColor: "transparent" }]}>
       {/* ── Header ── */}
       <View style={s.header}>
         <Text style={[s.greeting, { color: colors.text }]}>
@@ -571,7 +573,8 @@ export default function TodayScreen() {
           </SafeAreaView>
         </TouchableOpacity>
       </Modal>
-    </SafeAreaView>
+      </SafeAreaView>
+    </IconBackground>
   );
 }
 

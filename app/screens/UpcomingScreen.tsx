@@ -16,6 +16,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import IconBackground from "../../components/IconBackground";
 import NoteModal from "../../components/NoteModal";
 import { C } from "../../constants/theme";
 import type { TabParamList } from "../App";
@@ -112,7 +113,8 @@ export default function UpcomingScreen() {
   };
 
   return (
-    <SafeAreaView style={[s.safe, { backgroundColor: colors.bg }]}>
+    <IconBackground>
+      <SafeAreaView style={[s.safe, { backgroundColor: "transparent" }]}>
       {/* ── Header ── */}
       <View style={s.header}>
         <Text style={[s.title, { color: colors.text }]}>Upcoming</Text>
@@ -584,7 +586,8 @@ export default function UpcomingScreen() {
           </SafeAreaView>
         </TouchableOpacity>
       </Modal>
-    </SafeAreaView>
+      </SafeAreaView>
+    </IconBackground>
   );
 }
 

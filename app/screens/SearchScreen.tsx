@@ -11,6 +11,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import IconBackground from "../../components/IconBackground";
 import { useTasks } from "../context/TaskContext";
 import { useTheme } from "../context/ThemeContext";
 
@@ -43,7 +44,8 @@ export default function SearchScreen() {
   const showResults = results.length > 0;
 
   return (
-    <SafeAreaView style={[s.safe, { backgroundColor: colors.bg }]}>
+    <IconBackground>
+      <SafeAreaView style={[s.safe, { backgroundColor: "transparent" }]}>
       {/* ── Header ── */}
       <View style={s.header}>
         <Text style={[s.title, { color: colors.text }]}>Search</Text>
@@ -344,7 +346,8 @@ export default function SearchScreen() {
           )}
         />
       )}
-    </SafeAreaView>
+      </SafeAreaView>
+    </IconBackground>
   );
 }
 
