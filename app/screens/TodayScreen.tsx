@@ -15,6 +15,8 @@ import {
 } from "react-native";
 import IconBackground from "../../components/IconBackground";
 import NoteModal from "../../components/NoteModal";
+import VoiceCaptureButton from "../../components/VoiceCaptureButton";
+import VoiceCaptureModal from "../../components/VoiceCaptureModal";
 import { C } from "../../constants/theme";
 import type { RootStackParamList } from "../App";
 import { useTasks } from "../context/TaskContext";
@@ -238,6 +240,7 @@ export default function TodayScreen() {
   const [noteTaskId, setNoteTaskId] = useState<string | null>(null);
   const [showWelcome, setShowWelcome] = useState(false);
   const [firstLaunch, setFirstLaunch] = useState(true);
+  const [voiceModalVisible, setVoiceModalVisible] = useState(false);
   const actionTask = actionTaskId
     ? (tasks.find((t) => t.id === actionTaskId) ?? null)
     : null;
@@ -457,6 +460,9 @@ export default function TodayScreen() {
         <Ionicons name="add" size={26} color={C.white} />
       </TouchableOpacity>
 
+      {/* ── Voice capture button ── */}
+      <VoiceCaptureButton onPress={() => setVoiceModalVisible(true)} />
+
       {/* ── Welcome popup ── */}
       {showWelcome && (
         <WelcomePopup
@@ -573,6 +579,12 @@ export default function TodayScreen() {
           </SafeAreaView>
         </TouchableOpacity>
       </Modal>
+
+      {/* ── Voice capture modal ── */}
+      <VoiceCaptureModal
+        visible={voiceModalVisible}
+        onClose={() => setVoiceModalVisible(false)}
+      />
       </SafeAreaView>
     </IconBackground>
   );
