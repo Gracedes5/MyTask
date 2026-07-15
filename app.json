@@ -23,7 +23,11 @@
     },
     "web": {
       "output": "single",
-      "favicon": "./assets/images/favicon.png"
+      "favicon": "./assets/images/favicon.png",
+      "name": "Taskly",
+      "shortName": "Taskly",
+      "themeColor": "#5B4CF7",
+      "backgroundColor": "#FFFFFF"
     },
     "plugins": [
       [
