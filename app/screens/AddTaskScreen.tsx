@@ -8,12 +8,12 @@ import {
   KeyboardAvoidingView,
   Platform,
   ScrollView,
-  StyleSheet,
   Text,
   TextInput,
   TouchableOpacity,
   View,
 } from "react-native";
+import { AddTaskScreenStyles as s } from "../../constants/styles";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { C } from "../../constants/theme";
 import type { RootStackParamList } from "../App";
@@ -404,154 +404,3 @@ export default function AddTaskScreen() {
   );
 }
 
-const s = StyleSheet.create({
-  safe: { flex: 1 },
-  header: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    paddingHorizontal: 18,
-    paddingTop: 14,
-    paddingBottom: 12,
-    borderBottomWidth: 1,
-  },
-  closeBtn: { padding: 4 },
-  headerTitle: { fontSize: 16, fontWeight: "700" },
-  saveTopBtn: {
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 10,
-  },
-  saveTopTxt: { fontWeight: "700", fontSize: 13 },
-
-  scroll: { padding: 18, paddingBottom: 50 },
-  card: {
-    borderRadius: 16,
-    padding: 15,
-    marginBottom: 12,
-    borderWidth: 1,
-  },
-  lbl: {
-    fontSize: 10,
-    fontWeight: "700",
-    letterSpacing: 0.8,
-    marginBottom: 10,
-  },
-  titleInput: {
-    fontSize: 17,
-    fontWeight: "600",
-    padding: 0,
-    lineHeight: 24,
-  },
-  descInput: { fontSize: 14, padding: 0, height: 68 },
-
-  dayRow: { gap: 8, paddingVertical: 2 },
-  dc: {
-    alignItems: "center",
-    paddingHorizontal: 14,
-    paddingVertical: 10,
-    borderRadius: 12,
-    borderWidth: 1,
-    minWidth: 52,
-    position: "relative",
-  },
-  dcTxt: { fontSize: 11, fontWeight: "700" },
-  todayDot: {
-    width: 5,
-    height: 5,
-    borderRadius: 3,
-    position: "absolute",
-    top: 5,
-    right: 7,
-  },
-
-  timeRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 9,
-    borderRadius: 10,
-    padding: 11,
-    borderWidth: 1,
-  },
-  timeTxt: { flex: 1, fontSize: 14, fontWeight: "600" },
-  timeGrid: { flexDirection: "row", flexWrap: "wrap", gap: 7, marginTop: 12 },
-  ts: {
-    paddingHorizontal: 10,
-    paddingVertical: 7,
-    borderRadius: 9,
-    borderWidth: 1,
-  },
-  tsTxt: { fontSize: 11, fontWeight: "600" },
-
-  summary: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 10,
-    borderRadius: 14,
-    padding: 14,
-    marginBottom: 12,
-    borderWidth: 1,
-  },
-  summaryDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-  },
-  summaryTitle: { fontSize: 13, fontWeight: "700" },
-  summaryMeta: { fontSize: 11, marginTop: 3 },
-
-  addBtn: {
-    borderRadius: 14,
-    paddingVertical: 15,
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: 7,
-    shadowColor: "#8B5CF6",
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.45,
-    shadowRadius: 12,
-    elevation: 10,
-  },
-  addBtnTxt: { fontSize: 15, fontWeight: "700" },
-
-  toast: {
-    position: "absolute",
-    bottom: 30,
-    left: 16,
-    right: 16,
-    flexDirection: "row",
-    alignItems: "center",
-    borderRadius: 16,
-    padding: 14,
-    borderWidth: 1,
-    shadowColor: "#8B5CF6",
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.4,
-    shadowRadius: 14,
-    elevation: 12,
-  },
-  toastIcon: { marginRight: 12 },
-  toastBody: { flex: 1 },
-  toastTitle: {
-    fontSize: 14,
-    fontWeight: "700",
-  },
-  toastSub: {
-    fontSize: 11,
-    marginTop: 2,
-  },
-  toastAction: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 4,
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    borderRadius: 10,
-    marginLeft: 8,
-  },
-  toastActionTxt: {
-    fontSize: 11,
-    fontWeight: "700",
-  },
-});

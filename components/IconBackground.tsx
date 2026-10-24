@@ -1,6 +1,7 @@
 import { Ionicons } from "@expo/vector-icons";
 import React from "react";
-import { Dimensions, StyleSheet, View } from "react-native";
+import { Dimensions, View } from "react-native";
+import { IconBackgroundStyles as s } from "../constants/styles";
 import { useTheme } from "../app/context/ThemeContext";
 
 const { width, height } = Dimensions.get("window");
@@ -66,15 +67,3 @@ export default function IconBackground({
   );
 }
 
-const s = StyleSheet.create({
-  root: { flex: 1 },
-  icons: { ...StyleSheet.absoluteFillObject },
-  circle: {
-    position: "absolute",
-    borderWidth: 1.5,
-    borderStyle: "dashed",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  content: { flex: 1 },
-});

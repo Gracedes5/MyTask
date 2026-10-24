@@ -3,8 +3,8 @@ import React, { useRef } from "react";
 import {
   Animated,
   TouchableOpacity,
-  StyleSheet,
 } from "react-native";
+import { VoiceCaptureButtonStyles as s } from "../constants/styles";
 import { useTheme } from "../app/context/ThemeContext";
 
 type Props = {
@@ -57,22 +57,3 @@ export default function VoiceCaptureButton({ onPress }: Props) {
   );
 }
 
-const s = StyleSheet.create({
-  wrapper: {
-    position: "absolute",
-    bottom: 90,
-    right: 20,
-    zIndex: 50,
-  },
-  button: {
-    width: 52,
-    height: 52,
-    borderRadius: 26,
-    alignItems: "center",
-    justifyContent: "center",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.4,
-    shadowRadius: 10,
-    elevation: 8,
-  },
-});

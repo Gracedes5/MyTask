@@ -4,7 +4,8 @@ import { useNavigation } from "@react-navigation/native";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { StatusBar } from "expo-status-bar";
 import React, { useEffect, useRef, useState } from "react";
-import { Animated, Easing, StyleSheet, Text, View } from "react-native";
+import { Animated, Easing, Text, View } from "react-native";
+import { SplashScreenStyles as s } from "../../constants/styles";
 import { useTheme } from "../context/ThemeContext";
 import type { RootStackParamList } from "../types";
 
@@ -79,23 +80,3 @@ export default function SplashScreen() {
   );
 }
 
-const s = StyleSheet.create({
-  container: {
-    flex: 1,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  title: {
-    fontSize: 32,
-    fontWeight: "900",
-    marginTop: 12,
-    letterSpacing: 1,
-  },
-  cursor: { opacity: 0.7 },
-  tagline: {
-    fontSize: 14,
-    fontWeight: "500",
-    marginTop: 6,
-    opacity: 0.8,
-  },
-});

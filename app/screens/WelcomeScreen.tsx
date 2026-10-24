@@ -3,7 +3,8 @@ import { useNavigation } from "@react-navigation/native";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { StatusBar } from "expo-status-bar";
 import React from "react";
-import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { Text, TouchableOpacity, View } from "react-native";
+import { WelcomeScreenStyles as s } from "../../constants/styles";
 import { useTheme } from "../context/ThemeContext";
 import type { RootStackParamList } from "../types";
 
@@ -75,97 +76,3 @@ export default function WelcomeScreen() {
   );
 }
 
-const s = StyleSheet.create({
-  container: {
-    flex: 1,
-    paddingHorizontal: 28,
-  },
-  top: {
-    alignItems: "center",
-    paddingTop: 80,
-  },
-  logoWrap: {
-    width: 64,
-    height: 64,
-    borderRadius: 20,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  illustration: {
-    alignItems: "center",
-    justifyContent: "center",
-    height: 200,
-    marginTop: 40,
-  },
-  illoCircle: {
-    width: 120,
-    height: 120,
-    borderRadius: 60,
-    borderWidth: 2,
-    borderStyle: "dashed",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  illoCircleSm: {
-    position: "absolute",
-    top: 10,
-    right: 50,
-    width: 52,
-    height: 52,
-    borderRadius: 26,
-    borderWidth: 1,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  illoCircleXs: {
-    position: "absolute",
-    bottom: 20,
-    left: 50,
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    borderWidth: 1,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  textSection: {
-    alignItems: "center",
-    marginTop: 20,
-  },
-  headline: {
-    fontSize: 26,
-    fontWeight: "800",
-    textAlign: "center",
-    lineHeight: 34,
-    letterSpacing: -0.4,
-  },
-  subheading: {
-    fontSize: 14,
-    textAlign: "center",
-    lineHeight: 22,
-    marginTop: 12,
-    paddingHorizontal: 10,
-  },
-  buttons: {
-    marginTop: "auto",
-    paddingBottom: 50,
-    gap: 12,
-  },
-  primaryBtn: {
-    paddingVertical: 16,
-    borderRadius: 14,
-    alignItems: "center",
-  },
-  primaryBtnTxt: {
-    fontSize: 16,
-    fontWeight: "700",
-  },
-  skipBtn: {
-    paddingVertical: 10,
-    alignItems: "center",
-  },
-  skipBtnTxt: {
-    fontSize: 14,
-    fontWeight: "600",
-  },
-});

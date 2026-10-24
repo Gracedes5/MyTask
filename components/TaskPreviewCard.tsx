@@ -1,6 +1,7 @@
 import { Ionicons } from "@expo/vector-icons";
 import React from "react";
-import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { Text, TouchableOpacity, View } from "react-native";
+import { TaskPreviewCardStyles as s } from "../constants/styles";
 import { useTheme } from "../app/context/ThemeContext";
 import type { ParsedTask } from "../utils/parseVoiceTasks";
 
@@ -88,6 +89,8 @@ export default function TaskPreviewCard({ task, index, onEdit, onRemove }: Props
       </View>
 
       <View style={s.actions}>
+
+        {/* Edit */}
         <TouchableOpacity
           onPress={() => onEdit(index)}
           style={[s.iconBtn, { backgroundColor: colors.highlight }]}
@@ -95,6 +98,8 @@ export default function TaskPreviewCard({ task, index, onEdit, onRemove }: Props
         >
           <Ionicons name="create-outline" size={16} color={colors.primary} />
         </TouchableOpacity>
+
+        {/* Danger */}
         <TouchableOpacity
           onPress={() => onRemove(index)}
           style={[s.iconBtn, { backgroundColor: colors.highlight }]}
@@ -107,47 +112,3 @@ export default function TaskPreviewCard({ task, index, onEdit, onRemove }: Props
   );
 }
 
-const s = StyleSheet.create({
-  card: {
-    borderRadius: 14,
-    borderWidth: 1,
-    padding: 14,
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    marginBottom: 10,
-  },
-  left: {
-    flexDirection: "row",
-    alignItems: "center",
-    flex: 1,
-    gap: 12,
-  },
-  emoji: {
-    fontSize: 24,
-  },
-  info: {
-    flex: 1,
-    gap: 2,
-  },
-  title: {
-    fontSize: 14,
-    fontWeight: "600",
-  },
-  time: {
-    fontSize: 12,
-    fontWeight: "500",
-  },
-  actions: {
-    flexDirection: "row",
-    gap: 6,
-    marginLeft: 10,
-  },
-  iconBtn: {
-    width: 30,
-    height: 30,
-    borderRadius: 8,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-});

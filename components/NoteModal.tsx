@@ -3,12 +3,12 @@ import React, { useEffect, useState } from "react";
 import {
   Modal,
   SafeAreaView,
-  StyleSheet,
   Text,
   TextInput,
   TouchableOpacity,
   View,
 } from "react-native";
+import { NoteModalStyles as s } from "../constants/styles";
 import { C } from "../constants/theme";
 import { useTheme } from "../app/context/ThemeContext";
 
@@ -113,84 +113,3 @@ export default function NoteModal({
   );
 }
 
-const s = StyleSheet.create({
-  overlay: {
-    flex: 1,
-    backgroundColor: "rgba(0,0,0,0.3)",
-    justifyContent: "flex-end",
-  },
-  sheet: {
-    borderTopLeftRadius: 26,
-    borderTopRightRadius: 26,
-    borderTopWidth: 1,
-    padding: 22,
-    paddingBottom: 36,
-  },
-  handle: {
-    width: 38,
-    height: 4,
-    borderRadius: 2,
-    alignSelf: "center",
-    marginBottom: 18,
-  },
-  title: {
-    fontSize: 19,
-    fontWeight: "800",
-    marginBottom: 2,
-  },
-  sub: {
-    fontSize: 12,
-    fontWeight: "500",
-    marginBottom: 16,
-  },
-  input: {
-    borderWidth: 1,
-    borderRadius: 14,
-    paddingHorizontal: 14,
-    paddingVertical: 12,
-    fontSize: 14,
-    fontWeight: "500",
-    minHeight: 120,
-    lineHeight: 20,
-  },
-  counter: {
-    fontSize: 11,
-    fontWeight: "600",
-    textAlign: "right",
-    marginTop: 6,
-  },
-  actions: {
-    flexDirection: "row",
-    gap: 10,
-    marginTop: 16,
-  },
-  cancelBtn: {
-    flex: 1,
-    paddingVertical: 13,
-    borderRadius: 12,
-    borderWidth: 1,
-    alignItems: "center",
-  },
-  cancelTxt: {
-    fontSize: 14,
-    fontWeight: "700",
-  },
-  saveBtn: {
-    flex: 1,
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: 6,
-    paddingVertical: 13,
-    borderRadius: 12,
-    shadowColor: "#8B5CF6",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.4,
-    shadowRadius: 8,
-    elevation: 6,
-  },
-  saveTxt: {
-    fontSize: 14,
-    fontWeight: "700",
-  },
-});

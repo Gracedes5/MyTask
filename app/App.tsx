@@ -16,7 +16,6 @@ import {
   Image,
   Modal,
   SafeAreaView,
-  StyleSheet,
   Text,
   TouchableOpacity,
   View,
@@ -24,6 +23,7 @@ import {
 
 import { TaskProvider, useTasks } from "./context/TaskContext";
 import { ThemeProvider, useTheme } from "./context/ThemeContext";
+import { AppStyles as s } from "../constants/styles";
 
 import AddTaskScreen from "./screens/AddTaskScreen";
 import CreateAccountScreen from "./screens/CreateAccountScreen";
@@ -449,200 +449,6 @@ function Tabs() {
     </>
   );
 }
-
-const s = StyleSheet.create({
-  menuBar: {
-    flexDirection: "row",
-    alignItems: "center",
-    paddingTop: 50,
-    paddingBottom: 12,
-    paddingHorizontal: 16,
-  },
-  profileBtn: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  profileBtnImg: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-  },
-  menuTitle: {
-    fontSize: 19,
-    fontWeight: "900",
-    marginLeft: 8,
-    letterSpacing: 0.5,
-    flex: 1,
-  },
-  settingsBtn: {
-    width: 36,
-    height: 36,
-    borderRadius: 10,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  overlay: {
-    flex: 1,
-    backgroundColor: "rgba(0,0,0,0.4)",
-    justifyContent: "flex-end",
-  },
-  menuSheet: {
-    borderTopLeftRadius: 26,
-    borderTopRightRadius: 26,
-    borderTopWidth: 1,
-    padding: 22,
-    paddingBottom: 36,
-  },
-  menuHandle: {
-    width: 38,
-    height: 4,
-    borderRadius: 2,
-    alignSelf: "center",
-    marginBottom: 20,
-  },
-  menuHdr: {
-    fontSize: 18,
-    fontWeight: "800",
-    marginBottom: 16,
-  },
-  menuItem: {
-    flexDirection: "row",
-    alignItems: "center",
-    paddingVertical: 14,
-    borderBottomWidth: 1,
-  },
-  menuItemIcon: {
-    width: 34,
-    height: 34,
-    borderRadius: 10,
-    alignItems: "center",
-    justifyContent: "center",
-    marginRight: 14,
-  },
-  menuItemTxt: {
-    flex: 1,
-    fontSize: 15,
-    fontWeight: "600",
-  },
-
-  profileAvatarWrap: {
-    alignItems: "center",
-    marginBottom: 12,
-  },
-  profileAvatar: {
-    width: 72,
-    height: 72,
-    borderRadius: 36,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  profileAvatarImg: {
-    width: 72,
-    height: 72,
-    borderRadius: 36,
-  },
-  profileAvatarBadge: {
-    position: "absolute",
-    bottom: 0,
-    right: -2,
-    width: 26,
-    height: 26,
-    borderRadius: 13,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  profileName: {
-    fontSize: 20,
-    fontWeight: "800",
-    textAlign: "center",
-    marginBottom: 2,
-  },
-  profileJoin: {
-    fontSize: 12,
-    textAlign: "center",
-    marginBottom: 20,
-  },
-  profileStatsRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    borderRadius: 16,
-    borderWidth: 1,
-    paddingVertical: 16,
-  },
-  profileStat: {
-    flex: 1,
-    alignItems: "center",
-  },
-  profileStatNum: {
-    fontSize: 18,
-    fontWeight: "800",
-  },
-  profileStatLabel: {
-    fontSize: 11,
-    fontWeight: "600",
-    marginTop: 2,
-  },
-  profileStatDiv: {
-    width: 1,
-    height: 32,
-  },
-
-  settingsSheet: {
-    borderTopLeftRadius: 26,
-    borderTopRightRadius: 26,
-    borderTopWidth: 1,
-    padding: 22,
-    paddingBottom: 36,
-  },
-  settingsHandle: {
-    width: 38,
-    height: 4,
-    borderRadius: 2,
-    alignSelf: "center",
-    marginBottom: 18,
-  },
-  settingsTitle: {
-    fontSize: 19,
-    fontWeight: "800",
-    marginBottom: 18,
-  },
-  settingsRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 10,
-    paddingVertical: 12,
-  },
-  settingsLabel: {
-    fontSize: 15,
-    fontWeight: "600",
-  },
-  settingsDivider: {
-    height: 1,
-    marginVertical: 4,
-  },
-  settingsAboutRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    marginTop: 8,
-  },
-  settingsAbout: {
-    fontSize: 14,
-    fontWeight: "700",
-  },
-  settingsVersion: {
-    fontSize: 12,
-    marginTop: 2,
-  },
-  settingsDesc: {
-    fontSize: 11,
-    lineHeight: 16,
-    marginTop: 6,
-  },
-});
 
 export default function App() {
   return (

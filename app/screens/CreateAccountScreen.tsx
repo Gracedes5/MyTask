@@ -8,12 +8,12 @@ import {
   Alert,
   KeyboardAvoidingView,
   Platform,
-  StyleSheet,
   Text,
   TextInput,
   TouchableOpacity,
   View,
 } from "react-native";
+import { CreateAccountScreenStyles as s } from "../../constants/styles";
 import { useTheme } from "../context/ThemeContext";
 import type { RootStackParamList } from "../types";
 
@@ -190,69 +190,3 @@ export default function CreateAccountScreen() {
   );
 }
 
-const s = StyleSheet.create({
-  container: {
-    flex: 1,
-    paddingHorizontal: 28,
-  },
-  top: {
-    alignItems: "center",
-    paddingTop: 80,
-  },
-  logoWrap: {
-    width: 52,
-    height: 52,
-    borderRadius: 16,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  heading: {
-    fontSize: 24,
-    fontWeight: "800",
-    marginTop: 18,
-  },
-  subtitle: {
-    fontSize: 13,
-    marginTop: 6,
-  },
-  form: {
-    marginTop: 36,
-    gap: 14,
-  },
-  inputWrap: {
-    flexDirection: "row",
-    alignItems: "center",
-    borderRadius: 14,
-    borderWidth: 1,
-    paddingHorizontal: 14,
-    height: 50,
-  },
-  inputIcon: {
-    marginRight: 10,
-  },
-  input: {
-    flex: 1,
-    fontSize: 14,
-    fontWeight: "500",
-    padding: 0,
-  },
-  createBtn: {
-    paddingVertical: 16,
-    borderRadius: 14,
-    alignItems: "center",
-    marginTop: 4,
-  },
-  createBtnTxt: {
-    fontSize: 16,
-    fontWeight: "700",
-  },
-  footer: {
-    marginTop: "auto",
-    paddingBottom: 40,
-    alignItems: "center",
-  },
-  link: {
-    fontSize: 13,
-    fontWeight: "500",
-  },
-});
