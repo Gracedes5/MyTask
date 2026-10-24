@@ -1,5 +1,6 @@
 // screens/AddTaskScreen.tsx
 import { Ionicons } from "@expo/vector-icons";
+import DateTimePicker from "@react-native-community/datetimepicker";
 import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import React, { useEffect, useRef, useState } from "react";
@@ -29,41 +30,31 @@ const DAYS = [
   "Friday",
   "Saturday",
 ];
-const TIMES = [
-  "06:00 AM",
-  "07:00 AM",
-  "08:00 AM",
-  "09:00 AM",
-  "10:00 AM",
-  "11:00 AM",
-  "12:00 PM",
-  "01:00 PM",
-  "02:00 PM",
-  "03:00 PM",
-  "04:00 PM",
-  "05:00 PM",
-  "06:00 PM",
-  "07:00 PM",
-  "08:00 PM",
-  "09:00 PM",
-  "10:00 PM",
-];
 
 type Nav = NativeStackNavigationProp<RootStackParamList, "AddTask">;
+
+function formatDate(date: Date) {
+  const options: Intl.DateTimeFormatOptions = { weekday: "long", month: "long", day: "numeric", year: "numeric" };
+  return date.toLocaleDateString(undefined, options);
+}
+
+function formatTime(date: Date) {
+  return date.toLocaleTimeString(undefined, { hour: "2-digit", minute: "2-digit" });
+}
 
 export default function AddTaskScreen() {
   const insets = useSafeAreaInsets();
   const navigation = useNavigation<Nav>();
   const { addTask } = useTasks();
   const { colors } = useTheme();
-  const todayName = DAYS[new Date().getDay()];
 
   // useState for every form field (State management requirement)
   const [title, setTitle] = useState("");
   const [desc, setDesc] = useState("");
-  const [day, setDay] = useState(todayName);
-  const [time, setTime] = useState("");
-  const [showTimes, setShowTimes] = useState(false);
+  const [selectedDate, setSelectedDate] = useState(new Date());
+  const [showDatePicker, setShowDatePicker] = useState(false);
+  const [showTimePicker, setShowTimePicker] = useState(false);
+  const [timeSet, setTimeSet] = useState(false);
 
   const [saved, setSaved] = useState(false);
   const slideAnim = useRef(new Animated.Value(100)).current;
@@ -90,9 +81,12 @@ export default function AddTaskScreen() {
 
   const canSave = title.trim().length > 0;
 
+  const dayName = DAYS[selectedDate.getDay()];
+  const timeStr = timeSet ? formatTime(selectedDate) : "";
+
   const handleSave = () => {
     if (!canSave) return;
-    addTask({ title: title.trim(), description: desc.trim(), day, time });
+    addTask({ title: title.trim(), description: desc.trim(), day: dayName, time: timeStr });
     setSaved(true);
   };
 
@@ -189,127 +183,77 @@ export default function AddTaskScreen() {
             />
           </View>
 
-          {/* ── Day selector (Touchable area requirement) ── */}
+          {/* ── Date & Time picker (Date and time requirement) ── */}
           <View
             style={[
               s.card,
               { backgroundColor: colors.card, borderColor: colors.border },
             ]}
           >
-            <Text style={[s.lbl, { color: colors.muted }]}>SCHEDULE FOR</Text>
-            <ScrollView
-              horizontal
-              showsHorizontalScrollIndicator={false}
-              contentContainerStyle={s.dayRow}
+            <Text style={[s.lbl, { color: colors.muted }]}>SCHEDULE</Text>
+            <TouchableOpacity
+              style={[
+                s.timeRow,
+                { backgroundColor: colors.bg, borderColor: colors.border, marginBottom: 10 },
+              ]}
+              onPress={() => setShowDatePicker(true)}
+              activeOpacity={0.8}
+              disabled={saved}
             >
-              {DAYS.map((d) => (
-                <TouchableOpacity
-                  key={d}
-                  style={[
-                    s.dc,
-                    { backgroundColor: colors.bg, borderColor: colors.border },
-                    day === d && {
-                      backgroundColor: colors.primary,
-                      borderColor: colors.mutedLight,
-                    },
-                  ]}
-                  onPress={() => setDay(d)}
-                  activeOpacity={0.75}
-                  disabled={saved}
-                >
-                  <Text
-                    style={[
-                      s.dcTxt,
-                      { color: colors.muted },
-                      day === d && { color: C.white },
-                    ]}
-                  >
-                    {d.slice(0, 3)}
-                  </Text>
-                  {d === todayName && (
-                    <View
-                      style={[s.todayDot, { backgroundColor: colors.primary }]}
-                    />
-                  )}
-                </TouchableOpacity>
-              ))}
-            </ScrollView>
-          </View>
-
-          {/* ── Time picker (Touchable area requirement) ── */}
-          <View
-            style={[
-              s.card,
-              { backgroundColor: colors.card, borderColor: colors.border },
-            ]}
-          >
-            <Text style={[s.lbl, { color: colors.muted }]}>TIME</Text>
+              <Ionicons name="calendar-outline" size={17} color={colors.primary} />
+              <Text style={[s.timeTxt, { color: colors.text }]}>
+                {formatDate(selectedDate)}
+              </Text>
+              <Ionicons name="chevron-forward" size={15} color={colors.muted} />
+            </TouchableOpacity>
             <TouchableOpacity
               style={[
                 s.timeRow,
                 { backgroundColor: colors.bg, borderColor: colors.border },
               ]}
-              onPress={() => setShowTimes(!showTimes)}
+              onPress={() => setShowTimePicker(true)}
               activeOpacity={0.8}
               disabled={saved}
             >
-              <Ionicons
-                name="time-outline"
-                size={17}
-                color={time ? colors.primary : colors.muted}
-              />
-              <Text
-                style={[
-                  s.timeTxt,
-                  { color: colors.text },
-                  !time && { color: colors.muted },
-                ]}
-              >
-                {time || "Pick a time"}
+              <Ionicons name="time-outline" size={17} color={timeSet ? colors.primary : colors.muted} />
+              <Text style={[s.timeTxt, { color: timeSet ? colors.text : colors.muted }]}>
+                {timeSet ? formatTime(selectedDate) : "Pick a time (optional)"}
               </Text>
-              <Ionicons
-                name={showTimes ? "chevron-up" : "chevron-down"}
-                size={15}
-                color={colors.muted}
-              />
+              <Ionicons name="chevron-forward" size={15} color={colors.muted} />
             </TouchableOpacity>
-            {showTimes && (
-              <View style={s.timeGrid}>
-                {TIMES.map((t) => (
-                  <TouchableOpacity
-                    key={t}
-                    style={[
-                      s.ts,
-                      {
-                        backgroundColor: colors.bg,
-                        borderColor: colors.border,
-                      },
-                      time === t && {
-                        backgroundColor: colors.primary,
-                        borderColor: colors.primary,
-                      },
-                    ]}
-                    onPress={() => {
-                      setTime(t);
-                      setShowTimes(false);
-                    }}
-                    activeOpacity={0.75}
-                    disabled={saved}
-                  >
-                    <Text
-                      style={[
-                        s.tsTxt,
-                        { color: colors.muted },
-                        time === t && { color: C.white },
-                      ]}
-                    >
-                      {t}
-                    </Text>
-                  </TouchableOpacity>
-                ))}
-              </View>
-            )}
           </View>
+
+          {showDatePicker && (
+            <DateTimePicker
+              value={selectedDate}
+              mode="date"
+              display={Platform.OS === "ios" ? "spinner" : "default"}
+              onChange={(event, date) => {
+                setShowDatePicker(Platform.OS === "ios");
+                if (date) {
+                  const newDate = new Date(selectedDate);
+                  newDate.setFullYear(date.getFullYear(), date.getMonth(), date.getDate());
+                  setSelectedDate(newDate);
+                }
+              }}
+            />
+          )}
+          {showTimePicker && (
+            <DateTimePicker
+              value={selectedDate}
+              mode="time"
+              display={Platform.OS === "ios" ? "spinner" : "default"}
+              onChange={(event, date) => {
+                setShowTimePicker(Platform.OS === "ios");
+                if (date) {
+                  const newDate = new Date(selectedDate);
+                  newDate.setHours(date.getHours(), date.getMinutes());
+                  setSelectedDate(newDate);
+                  setTimeSet(true);
+                }
+              }}
+            />
+          )}
 
           {/* ── Live preview summary ── */}
           {canSave && !saved && (
@@ -330,8 +274,8 @@ export default function AddTaskScreen() {
                   {title}
                 </Text>
                 <Text style={[s.summaryMeta, { color: colors.muted }]}>
-                  {day}
-                  {time ? `  ·  ${time}` : ""}
+                  {formatDate(selectedDate)}
+                  {timeSet ? `  ·  ${formatTime(selectedDate)}` : ""}
                 </Text>
               </View>
               <Ionicons name="sparkles" size={15} color={colors.primary} />
@@ -380,8 +324,8 @@ export default function AddTaskScreen() {
                 Task saved!
               </Text>
               <Text style={[s.toastSub, { color: colors.muted }]}>
-                Scheduled for {day}
-                {time ? ` at ${time}` : ""}
+                Scheduled for {formatDate(selectedDate)}
+                {timeSet ? ` at ${formatTime(selectedDate)}` : ""}
               </Text>
             </View>
             <TouchableOpacity

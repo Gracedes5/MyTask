@@ -14,6 +14,7 @@ import {
 } from "react-native";
 import IconBackground from "../../components/IconBackground";
 import NoteModal from "../../components/NoteModal";
+import ConfirmModal from "../../components/ConfirmModal";
 import VoiceCaptureButton from "../../components/VoiceCaptureButton";
 import VoiceCaptureModal from "../../components/VoiceCaptureModal";
 import { C } from "../../constants/theme";
@@ -244,6 +245,7 @@ export default function TodayScreen() {
   const [showWelcome, setShowWelcome] = useState(false);
   const [firstLaunch, setFirstLaunch] = useState(true);
   const [voiceModalVisible, setVoiceModalVisible] = useState(false);
+  const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
   const actionTask = actionTaskId
     ? (tasks.find((t) => t.id === actionTaskId) ?? null)
     : null;
@@ -494,6 +496,20 @@ export default function TodayScreen() {
         onCancel={() => setNoteTaskId(null)}
       />
 
+      <ConfirmModal
+        visible={deleteConfirmId !== null}
+        title="Delete task"
+        message="Are you sure you want to delete this task? This action cannot be undone."
+        confirmText="Delete"
+        cancelText="Cancel"
+        destructive
+        onConfirm={() => {
+          if (deleteConfirmId) deleteTask(deleteConfirmId);
+          setDeleteConfirmId(null);
+        }}
+        onCancel={() => setDeleteConfirmId(null)}
+      />
+
       {/* ── Delete / Done prompt ── */}
       <Modal
         visible={actionTask !== null}
@@ -535,8 +551,12 @@ export default function TodayScreen() {
                   },
                 ]}
                 onPress={() => {
-                  if (actionTask) deleteTask(actionTask.id);
-                  setActionTaskId(null);
+                  if (actionTask) {
+                    setActionTaskId(null);
+                    setDeleteConfirmId(actionTask.id);
+                  } else {
+                    setActionTaskId(null);
+                  }
                 }}
                 activeOpacity={0.8}
               >

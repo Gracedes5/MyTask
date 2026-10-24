@@ -24,15 +24,16 @@ import {
 import { TaskProvider, useTasks } from "./context/TaskContext";
 import { ThemeProvider, useTheme } from "./context/ThemeContext";
 import { AppStyles as s } from "../constants/styles";
+import ConfirmModal from "../components/ConfirmModal";
 
 import AddTaskScreen from "./screens/AddTaskScreen";
-import CreateAccountScreen from "./screens/CreateAccountScreen";
-import LoginScreen from "./screens/LoginScreen";
+import CreateAccountScreen from "./auth/CreateAccountScreen";
+import LoginScreen from "./auth/LoginScreen";
 import SearchScreen from "./screens/SearchScreen";
 import SplashScreen from "./screens/SplashScreen";
 import TodayScreen from "./screens/TodayScreen";
 import UpcomingScreen from "./screens/UpcomingScreen";
-import WelcomeScreen from "./screens/WelcomeScreen";
+import WelcomeScreen from "./auth/WelcomeScreen";
 import type { RootStackParamList, TabParamList } from "./types";
 
 const Stack = createNativeStackNavigator<RootStackParamList>();

@@ -1,0 +1,8 @@
+Validate Inputs
+Add alerts and toast (Create custom alerts and toast).
+Add confirmation modal (do you want take this action)
+Save to local storage since no database
+Create a separate css style instead each styles in each page
+Greetings should have the name of the person signed.
+Improve on your comments.
+Fix all error in all screens

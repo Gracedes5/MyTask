@@ -18,6 +18,7 @@ import {
 import { UpcomingScreenStyles as s } from "../../constants/styles";
 import IconBackground from "../../components/IconBackground";
 import NoteModal from "../../components/NoteModal";
+import ConfirmModal from "../../components/ConfirmModal";
 import { C } from "../../constants/theme";
 import type { TabParamList } from "../App";
 import { Task, useTasks } from "../context/TaskContext";
@@ -73,6 +74,7 @@ export default function UpcomingScreen() {
   const [selected, setSelected] = useState<Task | null>(null);
   const [actionTaskId, setActionTaskId] = useState<string | null>(null);
   const [noteTaskId, setNoteTaskId] = useState<string | null>(null);
+  const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
   const actionTask = actionTaskId
     ? (tasks.find((t) => t.id === actionTaskId) ?? null)
     : null;
@@ -245,7 +247,7 @@ export default function UpcomingScreen() {
                       </TouchableOpacity>
                       <TouchableOpacity
                         style={s.actBtn}
-                        onPress={() => deleteTask(task.id)}
+                        onPress={() => setDeleteConfirmId(task.id)}
                       >
                         <Ionicons
                           name="trash-outline"
@@ -498,6 +500,20 @@ export default function UpcomingScreen() {
         </KeyboardAvoidingView>
       </Modal>
 
+      <ConfirmModal
+        visible={deleteConfirmId !== null}
+        title="Delete task"
+        message="Are you sure you want to delete this task? This action cannot be undone."
+        confirmText="Delete"
+        cancelText="Cancel"
+        destructive
+        onConfirm={() => {
+          if (deleteConfirmId) deleteTask(deleteConfirmId);
+          setDeleteConfirmId(null);
+        }}
+        onCancel={() => setDeleteConfirmId(null)}
+      />
+
       {/* ── Delete / Done prompt ── */}
       <Modal
         visible={actionTask !== null}
@@ -539,8 +555,12 @@ export default function UpcomingScreen() {
                   },
                 ]}
                 onPress={() => {
-                  if (actionTask) deleteTask(actionTask.id);
-                  setActionTaskId(null);
+                  if (actionTask) {
+                    setActionTaskId(null);
+                    setDeleteConfirmId(actionTask.id);
+                  } else {
+                    setActionTaskId(null);
+                  }
                 }}
                 activeOpacity={0.8}
               >
