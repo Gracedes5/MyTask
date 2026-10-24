@@ -22,7 +22,6 @@ import {
   WelcomePopupStyles as wp,
   PriorityRingStyles as pr,
 } from "../../constants/styles";
-import type { RootStackParamList } from "../App";
 import { useTasks } from "../context/TaskContext";
 import { useTheme } from "../context/ThemeContext";
 
@@ -36,7 +35,7 @@ const DAYS = [
   "Saturday",
 ];
 
-type Nav = NativeStackNavigationProp<RootStackParamList, "Tabs">;
+type Nav = NativeStackNavigationProp<{ AddTask: undefined }, "AddTask">;
 
 const WELCOME_KEY = "has_seen_welcome";
 const CONTINUE_KEY = "has_seen_continue";
@@ -287,7 +286,7 @@ export default function TodayScreen() {
     return "Good Evening";
   };
 
-  const priorityCard = total > 0 && (
+  const priorityCard = total > 0 ? (
     <View
       style={[
         pr.card,
@@ -330,7 +329,7 @@ export default function TodayScreen() {
         </View>
       </View>
     </View>
-  );
+  ) : null;
 
   return (
     <IconBackground>
@@ -361,7 +360,7 @@ export default function TodayScreen() {
             color={colors.mutedLight}
           />
           <Text style={[s.emptyTitle, { color: colors.text }]}>
-            Don't You have a Task?
+            Don&apos;t You have a Task?
           </Text>
           <Text style={[s.emptySub, { color: colors.muted }]}>
             Tap + to add one
