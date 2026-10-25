@@ -1,5 +1,12 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import React, { createContext, useContext, useEffect, useState } from "react";
+import React, {
+  createContext,
+  useContext,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
+import { AppState } from "react-native";
 
 export type Task = {
   id: string;
@@ -34,17 +41,57 @@ const STORAGE_KEY = "tasks";
 export function TaskProvider({ children }: { children: React.ReactNode }) {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [loaded, setLoaded] = useState(false);
+  const tasksRef = useRef<Task[]>([]);
 
   useEffect(() => {
-    AsyncStorage.getItem(STORAGE_KEY).then((json) => {
-      if (json) setTasks(JSON.parse(json));
-      setLoaded(true);
-    });
+    tasksRef.current = tasks;
+  }, [tasks]);
+
+  useEffect(() => {
+    let mounted = true;
+
+    AsyncStorage.getItem(STORAGE_KEY)
+      .then((json) => {
+        if (!mounted || !json) return;
+        const stored = JSON.parse(json);
+        if (Array.isArray(stored)) {
+          setTasks(stored);
+          tasksRef.current = stored;
+        }
+      })
+      .catch((error) => {
+        console.warn("Failed to restore tasks", error);
+      })
+      .finally(() => {
+        if (mounted) setLoaded(true);
+      });
+
+    return () => {
+      mounted = false;
+    };
   }, []);
 
   useEffect(() => {
-    if (loaded) AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(tasks));
+    if (!loaded) return;
+    AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(tasks)).catch((error) =>
+      console.warn("Failed to save tasks", error),
+    );
   }, [tasks, loaded]);
+
+  useEffect(() => {
+    if (!loaded) return;
+
+    const subscription = AppState.addEventListener("change", (state) => {
+      if (state !== "active") {
+        AsyncStorage.setItem(
+          STORAGE_KEY,
+          JSON.stringify(tasksRef.current),
+        ).catch((error) => console.warn("Failed to save tasks", error));
+      }
+    });
+
+    return () => subscription.remove();
+  }, [loaded]);
 
   const addTask = (t: Omit<Task, "id" | "done">) =>
     setTasks((prev) => [
