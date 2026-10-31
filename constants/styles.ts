@@ -1899,3 +1899,80 @@ export const CollapsibleStyles = StyleSheet.create({
     marginLeft: 24,
   },
 });
+
+/* ─────────────────────────────────────────────────────────────
+   Toast notifications (components/Toast.tsx)
+   ───────────────────────────────────────────────────────────── */
+export const ToastStyles = StyleSheet.create({
+  viewport: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    alignItems: "center",
+    paddingHorizontal: 16,
+    zIndex: 9999,
+    elevation: 9999,
+  },
+  stack: {
+    width: "100%",
+    maxWidth: 460,
+    gap: 10,
+  },
+  card: {
+    width: "100%",
+    minHeight: 64,
+    flexDirection: "row",
+    alignItems: "flex-start",
+    borderRadius: 16,
+    borderWidth: 1,
+    paddingTop: 12,
+    paddingBottom: 12,
+    paddingLeft: 14,
+    paddingRight: 8,
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.18,
+    shadowRadius: 16,
+    elevation: 8,
+  },
+  accent: {
+    position: "absolute",
+    left: 0,
+    top: 0,
+    bottom: 0,
+    width: 4,
+    borderTopLeftRadius: 15,
+    borderBottomLeftRadius: 15,
+  },
+  iconWrap: {
+    width: 34,
+    height: 34,
+    borderRadius: 17,
+    alignItems: "center",
+    justifyContent: "center",
+    marginLeft: 2,
+    marginRight: 10,
+  },
+  body: {
+    flex: 1,
+    paddingRight: 4,
+  },
+  title: {
+    fontSize: 14,
+    fontWeight: "700",
+    letterSpacing: -0.1,
+  },
+  description: {
+    fontSize: 12,
+    lineHeight: 17,
+    marginTop: 3,
+  },
+  closeBtn: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    alignItems: "center",
+    justifyContent: "center",
+    marginTop: 1,
+  },
+});

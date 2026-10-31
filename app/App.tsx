@@ -23,6 +23,7 @@ import {
 
 import { TaskProvider, useTasks } from "./context/TaskContext";
 import { ThemeProvider, useTheme } from "./context/ThemeContext";
+import { ToastProvider } from "./context/ToastContext";
 import { AppStyles as s } from "../constants/styles";
 import ConfirmModal from "../components/ConfirmModal";
 
@@ -454,24 +455,26 @@ function Tabs() {
 export default function App() {
   return (
     <ThemeProvider>
-      <TaskProvider>
-        <NavigationContainer>
-          <Stack.Navigator
-            initialRouteName="Welcome"
-            screenOptions={{ headerShown: false }}
-          >
-            <Stack.Screen name="Welcome" component={WelcomeScreen} />
-            <Stack.Screen name="Splash" component={SplashScreen} />
-            <Stack.Screen name="Login" component={LoginScreen} />
-            <Stack.Screen
-              name="CreateAccount"
-              component={CreateAccountScreen}
-            />
-            <Stack.Screen name="Tabs" component={Tabs} />
-            <Stack.Screen name="AddTask" component={AddTaskScreen} />
-          </Stack.Navigator>
-        </NavigationContainer>
-      </TaskProvider>
+      <ToastProvider>
+        <TaskProvider>
+          <NavigationContainer>
+            <Stack.Navigator
+              initialRouteName="Welcome"
+              screenOptions={{ headerShown: false }}
+            >
+              <Stack.Screen name="Welcome" component={WelcomeScreen} />
+              <Stack.Screen name="Splash" component={SplashScreen} />
+              <Stack.Screen name="Login" component={LoginScreen} />
+              <Stack.Screen
+                name="CreateAccount"
+                component={CreateAccountScreen}
+              />
+              <Stack.Screen name="Tabs" component={Tabs} />
+              <Stack.Screen name="AddTask" component={AddTaskScreen} />
+            </Stack.Navigator>
+          </NavigationContainer>
+        </TaskProvider>
+      </ToastProvider>
     </ThemeProvider>
   );
 }
