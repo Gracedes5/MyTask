@@ -17,7 +17,7 @@ import {
 import { AddTaskScreenStyles as s } from "../../constants/styles";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { C } from "../../constants/theme";
-import type { RootStackParamList } from "../App";
+import type { RootStackParamList } from "../types";
 import { useTasks } from "../context/TaskContext";
 import { useTheme } from "../context/ThemeContext";
 

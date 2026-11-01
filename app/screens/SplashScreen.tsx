@@ -1,11 +1,11 @@
 import { Ionicons } from "@expo/vector-icons";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useNavigation } from "@react-navigation/native";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { StatusBar } from "expo-status-bar";
 import React, { useEffect, useRef, useState } from "react";
 import { Animated, Easing, Text, View } from "react-native";
 import { SplashScreenStyles as s } from "../../constants/styles";
+import { storage, StorageKeys } from "../../utils/storage";
 import { useTheme } from "../context/ThemeContext";
 import type { RootStackParamList } from "../types";
 
@@ -14,8 +14,7 @@ const INTERVAL = 120;
 
 export default function SplashScreen() {
   const { colors, isDark } = useTheme();
-  const navigation =
-    useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const pulseAnim = useRef(new Animated.Value(1)).current;
   const [typeIndex, setTypeIndex] = useState(0);
 
@@ -47,11 +46,11 @@ export default function SplashScreen() {
     }, INTERVAL);
 
     const timer = setTimeout(async () => {
-      const loggedIn = await AsyncStorage.getItem("isLoggedIn");
+      const loggedIn = await storage.getItem(StorageKeys.IS_LOGGED_IN);
       if (loggedIn === "true") {
-        navigation.replace("Tabs");
+        navigation.replace("Tabs", {} as any);
       } else {
-        navigation.replace("Welcome");
+        navigation.replace("Welcome", {} as any);
       }
     }, 2000);
     return () => {
@@ -69,14 +68,9 @@ export default function SplashScreen() {
       </Animated.View>
       <Text style={[s.title, { color: colors.white }]}>
         {TITLE.slice(0, typeIndex)}
-        {typeIndex < TITLE.length && (
-          <Text style={[s.cursor, { color: colors.white }]}>|</Text>
-        )}
+        {typeIndex < TITLE.length && <Text style={[s.cursor, { color: colors.white }]}>|</Text>}
       </Text>
-      <Text style={[s.tagline, { color: colors.white }]}>
-        Organize your day
-      </Text>
+      <Text style={[s.tagline, { color: colors.white }]}>Organize your day</Text>
     </View>
   );
 }
-

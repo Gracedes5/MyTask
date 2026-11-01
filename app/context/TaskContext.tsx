@@ -1,4 +1,3 @@
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import React, {
   createContext,
   useContext,
@@ -7,6 +6,7 @@ import React, {
   useState,
 } from "react";
 import { AppState } from "react-native";
+import { storage, StorageKeys } from "../../utils/storage";
 
 export type Task = {
   id: string;
@@ -36,7 +36,7 @@ export const useTasks = () => {
   return ctx;
 };
 
-const STORAGE_KEY = "tasks";
+const STORAGE_KEY = StorageKeys.TASKS;
 
 export function TaskProvider({ children }: { children: React.ReactNode }) {
   const [tasks, setTasks] = useState<Task[]>([]);
@@ -50,10 +50,10 @@ export function TaskProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     let mounted = true;
 
-    AsyncStorage.getItem(STORAGE_KEY)
-      .then((json) => {
-        if (!mounted || !json) return;
-        const stored = JSON.parse(json);
+    storage
+      .getJSON<Task[]>(STORAGE_KEY, [])
+      .then((stored) => {
+        if (!mounted) return;
         if (Array.isArray(stored)) {
           setTasks(stored);
           tasksRef.current = stored;
@@ -73,7 +73,7 @@ export function TaskProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     if (!loaded) return;
-    AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(tasks)).catch((error) =>
+    storage.setJSON(STORAGE_KEY, tasks).catch((error) =>
       console.warn("Failed to save tasks", error),
     );
   }, [tasks, loaded]);
@@ -83,10 +83,9 @@ export function TaskProvider({ children }: { children: React.ReactNode }) {
 
     const subscription = AppState.addEventListener("change", (state) => {
       if (state !== "active") {
-        AsyncStorage.setItem(
-          STORAGE_KEY,
-          JSON.stringify(tasksRef.current),
-        ).catch((error) => console.warn("Failed to save tasks", error));
+        storage
+          .setJSON(STORAGE_KEY, tasksRef.current)
+          .catch((error) => console.warn("Failed to save tasks", error));
       }
     });
 

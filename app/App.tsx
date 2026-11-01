@@ -1,5 +1,4 @@
 import { Ionicons } from "@expo/vector-icons";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import {
   NavigationContainer,
@@ -26,6 +25,7 @@ import { ThemeProvider, useTheme } from "./context/ThemeContext";
 import { ToastProvider } from "./context/ToastContext";
 import { AppStyles as s } from "../constants/styles";
 import ConfirmModal from "../components/ConfirmModal";
+import { storage, StorageKeys } from "../utils/storage";
 
 import AddTaskScreen from "./screens/AddTaskScreen";
 import CreateAccountScreen from "./auth/CreateAccountScreen";
@@ -71,15 +71,17 @@ function Tabs() {
   const [profileUsername, setProfileUsername] = useState("");
 
   useEffect(() => {
-    AsyncStorage.multiGet([
-      "profileImage",
-      "profileName",
-      "profileUsername",
-    ]).then(([img, name, uname]) => {
-      if (img[1]) setProfileImage(img[1]);
-      if (name[1]) setProfileName(name[1]);
-      if (uname[1]) setProfileUsername(uname[1]);
-    });
+    storage
+      .multiGet([
+        StorageKeys.PROFILE_IMAGE,
+        StorageKeys.PROFILE_NAME,
+        StorageKeys.PROFILE_USERNAME,
+      ])
+      .then(([[, img], [, name], [, uname]]) => {
+        if (img) setProfileImage(img);
+        if (name) setProfileName(name);
+        if (uname) setProfileUsername(uname);
+      });
   }, []);
 
   const pickImage = useCallback(async () => {
@@ -93,12 +95,13 @@ function Tabs() {
     if (!result.canceled && result.assets[0]?.uri) {
       const uri = result.assets[0].uri;
       setProfileImage(uri);
-      await AsyncStorage.setItem("profileImage", uri);
+      await storage.setItem(StorageKeys.PROFILE_IMAGE, uri);
     }
   }, []);
 
   const handleLogout = useCallback(async () => {
     setSettingsVisible(false);
+    await storage.clearAll();
     rootNavigation.replace("Welcome");
   }, [rootNavigation]);
 

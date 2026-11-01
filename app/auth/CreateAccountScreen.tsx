@@ -1,5 +1,4 @@
 import { Ionicons } from "@expo/vector-icons";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useNavigation } from "@react-navigation/native";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { StatusBar } from "expo-status-bar";
@@ -17,6 +16,7 @@ import { CreateAccountScreenStyles as s } from "../../constants/styles";
 import { useTheme } from "../context/ThemeContext";
 import type { RootStackParamList } from "../types";
 import { validateCreateAccount } from "../../utils/validation";
+import { storage, StorageKeys } from "../../utils/storage";
 
 export default function CreateAccountScreen() {
   const { colors, isDark } = useTheme();
@@ -50,11 +50,11 @@ export default function CreateAccountScreen() {
       }
       return;
     }
-    await AsyncStorage.multiSet([
-      ["isLoggedIn", "true"],
-      ["profileName", result.trimmed.name],
-      ["profileUsername", result.trimmed.username],
-      ["profileEmail", result.trimmed.email],
+    await storage.multiSet([
+      [StorageKeys.IS_LOGGED_IN, "true"],
+      [StorageKeys.PROFILE_NAME, result.trimmed.name],
+      [StorageKeys.PROFILE_USERNAME, result.trimmed.username],
+      [StorageKeys.PROFILE_EMAIL, result.trimmed.email],
     ]);
     navigation.replace("Splash");
   };

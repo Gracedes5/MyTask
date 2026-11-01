@@ -1,6 +1,5 @@
 // screens/TodayScreen.tsx
 import { Ionicons } from "@expo/vector-icons";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import React, { useEffect, useState } from "react";
@@ -25,6 +24,7 @@ import {
 } from "../../constants/styles";
 import { useTasks } from "../context/TaskContext";
 import { useTheme } from "../context/ThemeContext";
+import { storage, StorageKeys } from "../../utils/storage";
 
 const DAYS = [
   "Sunday",
@@ -38,8 +38,8 @@ const DAYS = [
 
 type Nav = NativeStackNavigationProp<{ AddTask: undefined }, "AddTask">;
 
-const WELCOME_KEY = "has_seen_welcome";
-const CONTINUE_KEY = "has_seen_continue";
+const WELCOME_KEY = StorageKeys.HAS_SEEN_WELCOME;
+const CONTINUE_KEY = StorageKeys.HAS_SEEN_CONTINUE;
 
 function WelcomePopup({
   onDone,
@@ -251,10 +251,10 @@ export default function TodayScreen() {
     : null;
 
   useEffect(() => {
-    AsyncStorage.getItem(WELCOME_KEY).then((val) => {
+    storage.getItem(WELCOME_KEY).then((val) => {
       if (val === "true") {
         setFirstLaunch(false);
-        AsyncStorage.getItem(CONTINUE_KEY).then((c) => {
+        storage.getItem(CONTINUE_KEY).then((c) => {
           if (c !== "true") setShowWelcome(true);
         });
       } else {
@@ -476,9 +476,9 @@ export default function TodayScreen() {
           onDone={() => {
             setShowWelcome(false);
             if (firstLaunch) {
-              AsyncStorage.setItem(WELCOME_KEY, "true");
+              storage.setItem(WELCOME_KEY, "true");
             } else {
-              AsyncStorage.setItem(CONTINUE_KEY, "true");
+              storage.setItem(CONTINUE_KEY, "true");
             }
           }}
         />

@@ -1,5 +1,4 @@
 import { Ionicons } from "@expo/vector-icons";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useNavigation } from "@react-navigation/native";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { StatusBar } from "expo-status-bar";
@@ -17,6 +16,7 @@ import { LoginScreenStyles as s } from "../../constants/styles";
 import { validateLogin } from "../../utils/validation";
 import { useTheme } from "../context/ThemeContext";
 import type { RootStackParamList } from "../types";
+import { storage, StorageKeys } from "../../utils/storage";
 
 export default function LoginScreen() {
   const { colors, isDark } = useTheme();
@@ -46,9 +46,9 @@ export default function LoginScreen() {
       }
       return;
     }
-    await AsyncStorage.multiSet([
-      ["isLoggedIn", "true"],
-      ["profileUsername", result.trimmed.username],
+    await storage.multiSet([
+      [StorageKeys.IS_LOGGED_IN, "true"],
+      [StorageKeys.PROFILE_USERNAME, result.trimmed.username],
     ]);
     navigation.replace("Splash");
   };

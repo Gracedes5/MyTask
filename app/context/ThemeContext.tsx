@@ -1,6 +1,6 @@
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
 import { C, type ColorSet, DARK } from "../../constants/theme";
+import { storage, StorageKeys } from "../../utils/storage";
 
 type ThemeContextType = {
   isDark: boolean;
@@ -20,7 +20,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const [isDark, setIsDark] = useState(false);
 
   useEffect(() => {
-    AsyncStorage.getItem("dark_mode").then((v) => {
+    storage.getItem(StorageKeys.DARK_MODE).then((v) => {
       if (v === "true") setIsDark(true);
     });
   }, []);
@@ -28,7 +28,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const toggleDarkMode = useCallback(() => {
     setIsDark((prev) => {
       const next = !prev;
-      AsyncStorage.setItem("dark_mode", next ? "true" : "false");
+      storage.setItem(StorageKeys.DARK_MODE, next ? "true" : "false");
       return next;
     });
   }, []);
