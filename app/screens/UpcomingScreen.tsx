@@ -2,7 +2,7 @@
 import { Ionicons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
 import { BottomTabNavigationProp } from "@react-navigation/bottom-tabs";
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import {
   FlatList,
   KeyboardAvoidingView,
@@ -75,9 +75,15 @@ export default function UpcomingScreen() {
   const [actionTaskId, setActionTaskId] = useState<string | null>(null);
   const [noteTaskId, setNoteTaskId] = useState<string | null>(null);
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
-  const actionTask = actionTaskId
-    ? (tasks.find((t) => t.id === actionTaskId) ?? null)
-    : null;
+  const actionTask = useMemo(
+    () =>
+      actionTaskId ? (tasks.find((t) => t.id === actionTaskId) ?? null) : null,
+    [tasks, actionTaskId],
+  );
+  const noteTask = useMemo(
+    () => (noteTaskId ? (tasks.find((t) => t.id === noteTaskId) ?? null) : null),
+    [tasks, noteTaskId],
+  );
   const [eTitle, setETitle] = useState("");
   const [eDesc, setEDesc] = useState("");
   const [eDay, setEDay] = useState("");
@@ -85,13 +91,20 @@ export default function UpcomingScreen() {
   const [showTimes, setShowTimes] = useState(false);
 
   // Build ordered sections — only days that have tasks
-  const sections: Section[] = DAYS.reduce<Section[]>((acc, day) => {
-    const dayTasks = tasks.filter((t) => t.day === day);
-    if (dayTasks.length) acc.push({ day, data: dayTasks });
-    return acc;
-  }, []);
+  const sections = useMemo<Section[]>(
+    () =>
+      DAYS.reduce<Section[]>((acc, day) => {
+        const dayTasks = tasks.filter((t) => t.day === day);
+        if (dayTasks.length) acc.push({ day, data: dayTasks });
+        return acc;
+      }, []),
+    [tasks],
+  );
 
-  const doneCount = tasks.filter((t) => t.done).length;
+  const doneCount = useMemo(
+    () => tasks.filter((t) => t.done).length,
+    [tasks],
+  );
 
   const openEdit = (task: Task) => {
     setSelected(task);
@@ -308,8 +321,8 @@ export default function UpcomingScreen() {
       {/* ── Note modal ── */}
       <NoteModal
         visible={noteTaskId !== null}
-        initialNote={noteTaskId ? (tasks.find((t) => t.id === noteTaskId)?.note ?? "") : ""}
-        taskTitle={noteTaskId ? (tasks.find((t) => t.id === noteTaskId)?.title ?? "") : ""}
+        initialNote={noteTask?.note ?? ""}
+        taskTitle={noteTask?.title ?? ""}
         onSave={(n) => {
           if (noteTaskId) updateTaskNote(noteTaskId, n);
           setNoteTaskId(null);

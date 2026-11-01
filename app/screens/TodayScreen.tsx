@@ -2,7 +2,7 @@
 import { Ionicons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import {
   FlatList,
   Modal,
@@ -246,9 +246,15 @@ export default function TodayScreen() {
   const [firstLaunch, setFirstLaunch] = useState(true);
   const [voiceModalVisible, setVoiceModalVisible] = useState(false);
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
-  const actionTask = actionTaskId
-    ? (tasks.find((t) => t.id === actionTaskId) ?? null)
-    : null;
+  const actionTask = useMemo(
+    () =>
+      actionTaskId ? (tasks.find((t) => t.id === actionTaskId) ?? null) : null,
+    [tasks, actionTaskId],
+  );
+  const noteTask = useMemo(
+    () => (noteTaskId ? (tasks.find((t) => t.id === noteTaskId) ?? null) : null),
+    [tasks, noteTaskId],
+  );
 
   useEffect(() => {
     storage.getItem(WELCOME_KEY).then((val) => {
@@ -264,8 +270,14 @@ export default function TodayScreen() {
   }, []);
 
   const todayName = DAYS[new Date().getDay()];
-  const todayTasks = tasks.filter((t) => t.day === todayName);
-  const doneCount = todayTasks.filter((t) => t.done).length;
+  const todayTasks = useMemo(
+    () => tasks.filter((t) => t.day === todayName),
+    [tasks, todayName],
+  );
+  const doneCount = useMemo(
+    () => todayTasks.filter((t) => t.done).length,
+    [todayTasks],
+  );
 
   const total = todayTasks.length;
   const completed = doneCount;
@@ -487,8 +499,8 @@ export default function TodayScreen() {
       {/* ── Note modal ── */}
       <NoteModal
         visible={noteTaskId !== null}
-        initialNote={noteTaskId ? (tasks.find((t) => t.id === noteTaskId)?.note ?? "") : ""}
-        taskTitle={noteTaskId ? (tasks.find((t) => t.id === noteTaskId)?.title ?? "") : ""}
+        initialNote={noteTask?.note ?? ""}
+        taskTitle={noteTask?.title ?? ""}
         onSave={(n) => {
           if (noteTaskId) updateTaskNote(noteTaskId, n);
           setNoteTaskId(null);
