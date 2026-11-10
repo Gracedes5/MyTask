@@ -20,9 +20,10 @@ import IconBackground from "../../components/IconBackground";
 import NoteModal from "../../components/NoteModal";
 import ConfirmModal from "../../components/ConfirmModal";
 import { C } from "../../constants/theme";
-import type { TabParamList } from "../App";
+import type { TabParamList } from "../types";
 import { Task, useTasks } from "../context/TaskContext";
 import { useTheme } from "../context/ThemeContext";
+import { useToast } from "../context/ToastContext";
 
 const DAYS = [
   "Sunday",
@@ -53,6 +54,35 @@ const TIMES = [
   "10:00 PM",
 ];
 
+function timeToMinutes(time: string): number | null {
+  const match = time.match(/^(\d{1,2}):(\d{2})\s*(AM|PM)$/i);
+  if (match) {
+    let hours = parseInt(match[1], 10);
+    const minutes = parseInt(match[2], 10);
+    const meridiem = match[3].toUpperCase();
+    if (hours < 1 || hours > 12 || minutes > 59) return null;
+    if (meridiem === "PM" && hours !== 12) hours += 12;
+    if (meridiem === "AM" && hours === 12) hours = 0;
+    return hours * 60 + minutes;
+  }
+
+  const h24 = time.match(/^(\d{1,2}):(\d{2})$/);
+  if (!h24) return null;
+  const hours = parseInt(h24[1], 10);
+  const minutes = parseInt(h24[2], 10);
+  if (hours > 23 || minutes > 59) return null;
+  return hours * 60 + minutes;
+}
+
+function sortByTime(a: Task, b: Task): number {
+  const aTime = timeToMinutes(a.time);
+  const bTime = timeToMinutes(b.time);
+  if (aTime === null && bTime === null) return 0;
+  if (aTime === null) return 1;
+  if (bTime === null) return -1;
+  return aTime - bTime;
+}
+
 function dayLabel(day: string): string {
   const today = DAYS[new Date().getDay()];
   const tomorrow = DAYS[(new Date().getDay() + 1) % 7];
@@ -66,8 +96,10 @@ type Section = { day: string; data: Task[] };
 export default function UpcomingScreen() {
   const { tasks, toggleDone, editTask, deleteTask, updateTaskNote } = useTasks();
   const { colors, isDark } = useTheme();
+  const toast = useToast();
   const navigation = useNavigation<BottomTabNavigationProp<TabParamList>>();
-  const todayName = DAYS[new Date().getDay()];
+  const todayIndex = new Date().getDay();
+  const todayName = DAYS[todayIndex];
 
   // useState for modal form (State management requirement)
   const [modalVisible, setModal] = useState(false);
@@ -90,15 +122,18 @@ export default function UpcomingScreen() {
   const [eTime, setETime] = useState("");
   const [showTimes, setShowTimes] = useState(false);
 
-  // Build ordered sections — only days that have tasks
+  // Build chronological sections starting with today.
   const sections = useMemo<Section[]>(
     () =>
-      DAYS.reduce<Section[]>((acc, day) => {
-        const dayTasks = tasks.filter((t) => t.day === day);
-        if (dayTasks.length) acc.push({ day, data: dayTasks });
-        return acc;
-      }, []),
-    [tasks],
+      Array.from({ length: DAYS.length }, (_, offset) => {
+        const day = DAYS[(todayIndex + offset) % DAYS.length];
+        const dayTasks = tasks
+          .filter((t) => t.day === day)
+          .slice()
+          .sort(sortByTime);
+        return { day, data: dayTasks };
+      }).filter((section) => section.data.length > 0),
+    [tasks, todayIndex],
   );
 
   const doneCount = useMemo(
@@ -117,7 +152,11 @@ export default function UpcomingScreen() {
   };
 
   const saveEdit = () => {
-    if (!eTitle.trim() || !selected) return;
+    if (!selected) return;
+    if (!eTitle.trim()) {
+      toast.warning("Task title required", "Please enter a title before saving.");
+      return;
+    }
     editTask(selected.id, {
       title: eTitle.trim(),
       description: eDesc.trim(),

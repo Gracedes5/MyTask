@@ -20,6 +20,7 @@ import { C } from "../../constants/theme";
 import type { RootStackParamList } from "../types";
 import { useTasks } from "../context/TaskContext";
 import { useTheme } from "../context/ThemeContext";
+import { validateAddTask } from "../../utils/validation";
 
 const DAYS = [
   "Sunday",
@@ -79,23 +80,28 @@ export default function AddTaskScreen() {
     }
   }, [saved, navigation, slideAnim]);
 
-  const canSave = title.trim().length > 0;
+  const validation = validateAddTask({ title, description: desc });
+  const canSave = validation.ok;
 
   const dayName = DAYS[selectedDate.getDay()];
   const timeStr = timeSet ? formatTime(selectedDate) : "";
 
   const handleSave = () => {
-    if (!canSave) return;
-    addTask({ title: title.trim(), description: desc.trim(), day: dayName, time: timeStr });
+    if (!validation.ok) return;
+    addTask({
+      title: validation.trimmed.title,
+      description: validation.trimmed.description,
+      day: dayName,
+      time: timeStr,
+    });
     setSaved(true);
   };
 
   const goToUpcoming = () => {
-    console.log("View in Upcoming pressed");
     if (timerRef.current) {
       clearTimeout(timerRef.current);
     }
-    navigation.replace("Tabs", { screen: "Upcoming" });
+    navigation.navigate("Tabs", { screen: "Upcoming" });
   };
   return (
     <View
@@ -157,6 +163,7 @@ export default function AddTaskScreen() {
               placeholderTextColor={colors.muted}
               selectionColor={colors.primary}
               autoFocus
+              maxLength={100}
               editable={!saved}
             />
           </View>
@@ -176,6 +183,7 @@ export default function AddTaskScreen() {
               placeholder="Add a note (optional)"
               placeholderTextColor={colors.muted}
               selectionColor={colors.primary}
+              maxLength={300}
               multiline
               numberOfLines={3}
               textAlignVertical="top"

@@ -24,6 +24,7 @@ import {
 } from "../../constants/styles";
 import { useTasks } from "../context/TaskContext";
 import { useTheme } from "../context/ThemeContext";
+import { useProfile } from "../context/ProfileContext";
 import { storage, StorageKeys } from "../../utils/storage";
 
 const DAYS = [
@@ -50,7 +51,7 @@ function WelcomePopup({
   onClose: () => void;
   first: boolean;
 }) {
-  const { colors, isDark } = useTheme();
+  const { colors } = useTheme();
   return (
     <View style={wp.overlay}>
       <View
@@ -238,6 +239,7 @@ function ProgressRing({
 export default function TodayScreen() {
   const { tasks, toggleDone, deleteTask, updateTaskNote } = useTasks();
   const { colors, isDark } = useTheme();
+  const { displayName } = useProfile();
   const navigation = useNavigation<Nav>();
 
   const [actionTaskId, setActionTaskId] = useState<string | null>(null);
@@ -300,6 +302,14 @@ export default function TodayScreen() {
     return "Good Evening";
   };
 
+  const dismissWelcome = () => {
+    setShowWelcome(false);
+    if (firstLaunch) {
+      storage.setItem(WELCOME_KEY, "true");
+    }
+    storage.setItem(CONTINUE_KEY, "true");
+  };
+
   const priorityCard = total > 0 ? (
     <View
       style={[
@@ -351,7 +361,9 @@ export default function TodayScreen() {
       {/* ── Header ── */}
       <View style={s.header}>
         <Text style={[s.greeting, { color: colors.text }]}>
-          {greeting()} <Text style={s.wave}>👋</Text>
+          {greeting()}
+          {displayName !== "there" ? `, ${displayName}` : ""}{" "}
+          <Text style={s.wave}>👋</Text>
         </Text>
         <Text style={[s.title, { color: colors.text }]}>Today</Text>
         <Text style={[s.subtitle, { color: colors.muted }]}>{todayName}</Text>
@@ -484,15 +496,8 @@ export default function TodayScreen() {
       {showWelcome && (
         <WelcomePopup
           first={firstLaunch}
-          onClose={() => setShowWelcome(false)}
-          onDone={() => {
-            setShowWelcome(false);
-            if (firstLaunch) {
-              storage.setItem(WELCOME_KEY, "true");
-            } else {
-              storage.setItem(CONTINUE_KEY, "true");
-            }
-          }}
+          onClose={dismissWelcome}
+          onDone={dismissWelcome}
         />
       )}
 

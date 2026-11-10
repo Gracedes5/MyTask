@@ -53,7 +53,7 @@ export function validateCreateAccount(values: {
     errors.name = "Name must be under 50 characters.";
   } else if (/\d/.test(trimmed.name)) {
     errors.name = "Full name cannot contain numbers or phone numbers.";
-  } else if (/[^A-Za-z\s'.-]/.test(trimmed.name)) {
+  } else if (/[^\p{L}\s'.-]/u.test(trimmed.name)) {
     errors.name = "Full name can only contain letters, spaces, apostrophes, dots or hyphens.";
   } else {
     const parts = trimmed.name.replace(/\s+/g, " ").split(" ").filter(Boolean);

@@ -33,19 +33,28 @@ function getTodayName(): string {
 }
 
 function formatTimeDisplay(time: string): string {
-  if (!time) return "";
-  const match = time.match(/^(\d{1,2}):(\d{2})\s*(AM|PM)$/i);
-  if (!match) return time;
-  let h = parseInt(match[1], 10);
-  const m = match[2];
-  const meridiem = match[3].toUpperCase();
-  if (meridiem === "PM" && h !== 12) h += 12;
-  if (meridiem === "AM" && h === 12) h = 0;
-  return `${String(h).padStart(2, "0")}:${m} ${meridiem}`;
+  const trimmed = time.trim();
+  if (!trimmed) return "";
+
+  const match = trimmed.match(/^(\d{1,2}):(\d{2})\s*(AM|PM)$/i);
+  if (match) {
+    const h = parseInt(match[1], 10);
+    if (h < 1 || h > 12) return trimmed;
+    return `${String(h).padStart(2, "0")}:${match[2]} ${match[3].toUpperCase()}`;
+  }
+
+  const h24 = trimmed.match(/^(\d{1,2}):(\d{2})$/);
+  if (!h24) return trimmed;
+
+  const hours = parseInt(h24[1], 10);
+  if (hours < 0 || hours > 23) return trimmed;
+  const meridiem = hours >= 12 ? "PM" : "AM";
+  const hour12 = hours % 12 || 12;
+  return `${String(hour12).padStart(2, "0")}:${h24[2]} ${meridiem}`;
 }
 
 export default function VoiceCaptureModal({ visible, onClose }: Props) {
-  const { colors, isDark } = useTheme();
+  const { colors } = useTheme();
   const { addTask } = useTasks();
 
   const [step, setStep] = useState<"input" | "review" | "editing">("input");
@@ -100,7 +109,7 @@ export default function VoiceCaptureModal({ visible, onClose }: Props) {
   const handleGenerate = () => {
     const tasks = parseVoiceTasks(inputText);
     setParsedTasks(tasks);
-    setStep(tasks.length > 0 ? "review" : "review");
+    setStep("review");
   };
 
   const handleSave = () => {
@@ -123,6 +132,7 @@ export default function VoiceCaptureModal({ visible, onClose }: Props) {
 
   const handleEdit = (index: number) => {
     const task = parsedTasks[index];
+    if (!task) return;
     setEditIndex(index);
     setEditTitle(task.title);
     setEditTime(task.time);
@@ -162,7 +172,10 @@ export default function VoiceCaptureModal({ visible, onClose }: Props) {
 
   const handleAddManual = () => {
     setParsedTasks((prev) => [...prev, { title: "", time: "" }]);
-    handleEdit(parsedTasks.length);
+    setEditIndex(parsedTasks.length);
+    setEditTitle("");
+    setEditTime("");
+    setStep("editing");
   };
 
   const handleBackToInput = () => {
@@ -287,7 +300,7 @@ export default function VoiceCaptureModal({ visible, onClose }: Props) {
                       color={colors.mutedLight}
                     />
                     <Text style={[s.noTasksSub, { color: colors.muted }]}>
-                      Try a different description,{'\n'}e.g. "Visit the bank at 9am"
+                      Try a different description,{'\n'}e.g. &quot;Visit the bank at 9am&quot;
                     </Text>
                     <TouchableOpacity
                       style={[s.retryBtn, { backgroundColor: colors.primary }]}
@@ -389,8 +402,13 @@ export default function VoiceCaptureModal({ visible, onClose }: Props) {
                   <TouchableOpacity
                     style={[s.editBtn, { borderColor: colors.danger }]}
                     onPress={() => {
+                      if (editIndex === null) return;
+                      const remaining = parsedTasks.length - 1;
                       handleRemove(editIndex);
-                      handleEditCancel();
+                      setEditIndex(null);
+                      setEditTitle("");
+                      setEditTime("");
+                      if (remaining > 0) setStep("review");
                     }}
                     activeOpacity={0.7}
                   >

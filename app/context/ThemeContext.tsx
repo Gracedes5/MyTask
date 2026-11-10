@@ -18,19 +18,22 @@ export const useTheme = () => {
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const [isDark, setIsDark] = useState(false);
+  const [loaded, setLoaded] = useState(false);
 
   useEffect(() => {
     storage.getItem(StorageKeys.DARK_MODE).then((v) => {
-      if (v === "true") setIsDark(true);
+      setIsDark(v === "true");
+      setLoaded(true);
     });
   }, []);
 
+  useEffect(() => {
+    if (!loaded) return;
+    storage.setItem(StorageKeys.DARK_MODE, isDark ? "true" : "false");
+  }, [isDark, loaded]);
+
   const toggleDarkMode = useCallback(() => {
-    setIsDark((prev) => {
-      const next = !prev;
-      storage.setItem(StorageKeys.DARK_MODE, next ? "true" : "false");
-      return next;
-    });
+    setIsDark((prev) => !prev);
   }, []);
 
   const colors = useMemo(() => (isDark ? DARK : C), [isDark]);

@@ -32,7 +32,7 @@ export const DARK: ColorSet = {
   primary: "#A78BFA",
   bg: "#0F0D1A",
   card: "#1A1730",
-  text: "#09080c",
+  text: "#F3EEFF",
   success: "#4ADE80",
   warning: "#FBBF24",
   danger: "#FF6B6B",

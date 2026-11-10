@@ -17,9 +17,12 @@ import { useTheme } from "../context/ThemeContext";
 import type { RootStackParamList } from "../types";
 import { validateCreateAccount } from "../../utils/validation";
 import { storage, StorageKeys } from "../../utils/storage";
+import { saveAccount } from "../../utils/accounts";
+import { useProfile } from "../context/ProfileContext";
 
 export default function CreateAccountScreen() {
   const { colors, isDark } = useTheme();
+  const { reloadProfile } = useProfile();
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
 
@@ -36,7 +39,7 @@ export default function CreateAccountScreen() {
     const result = validateCreateAccount({ name, username, email, password });
     if (!result.ok) {
       const err: Record<string, string> = {};
-      (Object.keys(result.errors) as Array<keyof typeof result.errors>).forEach((k) => {
+      (Object.keys(result.errors) as (keyof typeof result.errors)[]).forEach((k) => {
         const v = result.errors[k];
         if (typeof v === "string" && v.length > 0) {
           err[k as string] = v;
@@ -50,12 +53,19 @@ export default function CreateAccountScreen() {
       }
       return;
     }
+    await saveAccount({
+      name: result.trimmed.name,
+      username: result.trimmed.username,
+      email: result.trimmed.email,
+    });
+    await storage.removeItem(StorageKeys.PROFILE_IMAGE);
     await storage.multiSet([
       [StorageKeys.IS_LOGGED_IN, "true"],
       [StorageKeys.PROFILE_NAME, result.trimmed.name],
       [StorageKeys.PROFILE_USERNAME, result.trimmed.username],
       [StorageKeys.PROFILE_EMAIL, result.trimmed.email],
     ]);
+    await reloadProfile();
     navigation.replace("Splash");
   };
 

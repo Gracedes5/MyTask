@@ -15,33 +15,95 @@ import IconBackground from "../../components/IconBackground";
 import { useTasks } from "../context/TaskContext";
 import { useTheme } from "../context/ThemeContext";
 
+const DAYS = [
+  "Sunday",
+  "Monday",
+  "Tuesday",
+  "Wednesday",
+  "Thursday",
+  "Friday",
+  "Saturday",
+];
+
+function timeToMinutes(time: string): number | null {
+  const match = time.match(/^(\d{1,2}):(\d{2})\s*(AM|PM)$/i);
+  if (match) {
+    let hours = parseInt(match[1], 10);
+    const minutes = parseInt(match[2], 10);
+    const meridiem = match[3].toUpperCase();
+    if (hours < 1 || hours > 12 || minutes > 59) return null;
+    if (meridiem === "PM" && hours !== 12) hours += 12;
+    if (meridiem === "AM" && hours === 12) hours = 0;
+    return hours * 60 + minutes;
+  }
+
+  const h24 = time.match(/^(\d{1,2}):(\d{2})$/);
+  if (!h24) return null;
+  const hours = parseInt(h24[1], 10);
+  const minutes = parseInt(h24[2], 10);
+  if (hours > 23 || minutes > 59) return null;
+  return hours * 60 + minutes;
+}
+
+function sortByTime(a: { time: string }, b: { time: string }): number {
+  const aTime = timeToMinutes(a.time);
+  const bTime = timeToMinutes(b.time);
+  if (aTime === null && bTime === null) return 0;
+  if (aTime === null) return 1;
+  if (bTime === null) return -1;
+  return aTime - bTime;
+}
+
 export default function SearchScreen() {
   const { tasks, toggleDone } = useTasks();
   const { colors, isDark } = useTheme();
 
   // useState for search query (State management requirement)
   const [query, setQuery] = useState("");
+  const [quickFilter, setQuickFilter] = useState<"day" | "time" | null>(null);
+  const todayName = DAYS[new Date().getDay()];
 
   // Derived search results from local task data (Dynamic data display requirement)
   const results = useMemo(() => {
     const q = query.trim().toLowerCase();
-    if (!q) return [];
-    return tasks.filter(
+    if (!q && quickFilter === null) return [];
+
+    let filtered = tasks;
+
+    if (quickFilter === "day") {
+      filtered = filtered.filter((t) => t.day === todayName);
+    } else if (quickFilter === "time") {
+      filtered = filtered
+        .filter((t) => !!t.time)
+        .slice()
+        .sort(sortByTime);
+    }
+
+    if (!q) return filtered;
+
+    return filtered.filter(
       (t) =>
         t.title.toLowerCase().includes(q) ||
-        t.description.toLowerCase().includes(q) ||
-        t.day.toLowerCase().includes(q),
+        (t.description ?? "").toLowerCase().includes(q) ||
+        (t.day ?? "").toLowerCase().includes(q) ||
+        (t.note ?? "").toLowerCase().includes(q),
     );
-  }, [query, tasks]);
+  }, [query, tasks, quickFilter, todayName]);
 
   const doneTasks = useMemo(
     () => tasks.filter((t) => t.done),
     [tasks],
   );
 
-  const showRecent = !query.trim();
-  const showEmpty = !!query.trim() && results.length === 0;
+  const isFiltering = !!query.trim() || quickFilter !== null;
+  const showRecent = !isFiltering;
+  const showEmpty = isFiltering && results.length === 0;
   const showResults = results.length > 0;
+
+  const toggleQuickFilter = (filter: "day" | "time") => {
+    setQuery("");
+    setQuickFilter((prev) => (prev === filter ? null : filter));
+  };
 
   return (
     <IconBackground>
@@ -76,8 +138,13 @@ export default function SearchScreen() {
           returnKeyType="search"
         />
         {/* Clear button (Interactive element) */}
-        {query.length > 0 && (
-          <TouchableOpacity onPress={() => setQuery("")}>
+        {isFiltering && (
+          <TouchableOpacity
+            onPress={() => {
+              setQuery("");
+              setQuickFilter(null);
+            }}
+          >
             <Ionicons name="close-circle" size={17} color={colors.muted} />
           </TouchableOpacity>
         )}
@@ -98,7 +165,12 @@ export default function SearchScreen() {
             />
 
             <TouchableOpacity
-              style={[s.recentRow, { borderBottomColor: colors.highlight }]}
+              style={[
+                s.recentRow,
+                { borderBottomColor: colors.highlight },
+                quickFilter === "day" && { backgroundColor: colors.highlight },
+              ]}
+              onPress={() => toggleQuickFilter("day")}
               activeOpacity={0.7}
             >
               <View
@@ -110,11 +182,18 @@ export default function SearchScreen() {
                   color={colors.primary}
                 />
               </View>
-              <Text style={[s.recentLabel, { color: colors.muted }]}>Day</Text>
+              <Text style={[s.recentLabel, { color: colors.muted }]}>
+                Day · Today
+              </Text>
             </TouchableOpacity>
 
             <TouchableOpacity
-              style={[s.recentRow, { borderBottomColor: colors.highlight }]}
+              style={[
+                s.recentRow,
+                { borderBottomColor: colors.highlight },
+                quickFilter === "time" && { backgroundColor: colors.highlight },
+              ]}
+              onPress={() => toggleQuickFilter("time")}
               activeOpacity={0.7}
             >
               <View
@@ -232,6 +311,11 @@ export default function SearchScreen() {
           showsVerticalScrollIndicator={true}
           ListHeaderComponent={
             <Text style={[s.resultsHdr, { color: colors.muted }]}>
+              {quickFilter === "day"
+                ? "Today · "
+                : quickFilter === "time"
+                  ? "Scheduled · "
+                  : ""}
               {results.length} result{results.length !== 1 ? "s" : ""}
             </Text>
           }

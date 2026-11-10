@@ -28,6 +28,7 @@ type TaskContextType = {
   editTask: (id: string, updates: Partial<Omit<Task, "id">>) => void;
   deleteTask: (id: string) => void;
   updateTaskNote: (id: string, note: string) => void;
+  resetTasks: () => void;
 };
 
 const TaskContext = createContext<TaskContextType | null>(null);
@@ -40,10 +41,50 @@ export const useTasks = () => {
 
 const STORAGE_KEY = StorageKeys.TASKS;
 
+function normalizeStoredTasks(value: unknown): Task[] {
+  if (!Array.isArray(value)) return [];
+
+  const seen = new Set<string>();
+  const normalized: Task[] = [];
+
+  value.forEach((item, index) => {
+    if (!item || typeof item !== "object") return;
+
+    const raw = item as Record<string, unknown>;
+    const title = typeof raw.title === "string" ? raw.title : "";
+    if (!title.trim()) return;
+
+    let id =
+      typeof raw.id === "string" && raw.id.trim()
+        ? raw.id
+        : `legacy-${Date.now()}-${index}`;
+    if (seen.has(id)) id = `${id}-${index}`;
+    seen.add(id);
+
+    normalized.push({
+      id,
+      title,
+      description:
+        typeof raw.description === "string" ? raw.description : "",
+      day: typeof raw.day === "string" ? raw.day : "",
+      time: typeof raw.time === "string" ? raw.time : "",
+      done: raw.done === true,
+      ...(typeof raw.completedAt === "string"
+        ? { completedAt: raw.completedAt }
+        : {}),
+      ...(typeof raw.note === "string" ? { note: raw.note } : {}),
+    });
+  });
+
+  return normalized;
+}
+
 export function TaskProvider({ children }: { children: React.ReactNode }) {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [loaded, setLoaded] = useState(false);
   const tasksRef = useRef<Task[]>([]);
+  const loadFailedRef = useRef(false);
+  const idCounterRef = useRef(0);
 
   useEffect(() => {
     tasksRef.current = tasks;
@@ -53,15 +94,27 @@ export function TaskProvider({ children }: { children: React.ReactNode }) {
     let mounted = true;
 
     storage
-      .getJSON<Task[]>(STORAGE_KEY, [])
-      .then((stored) => {
+      .getItem(STORAGE_KEY)
+      .then((raw) => {
         if (!mounted) return;
-        if (Array.isArray(stored)) {
-          setTasks(stored);
-          tasksRef.current = stored;
+
+        if (!raw) {
+          setTasks([]);
+          tasksRef.current = [];
+          return;
+        }
+
+        try {
+          const restored = normalizeStoredTasks(JSON.parse(raw));
+          setTasks(restored);
+          tasksRef.current = restored;
+        } catch (error) {
+          loadFailedRef.current = true;
+          console.warn("Failed to restore tasks", error);
         }
       })
       .catch((error) => {
+        loadFailedRef.current = true;
         console.warn("Failed to restore tasks", error);
       })
       .finally(() => {
@@ -74,14 +127,14 @@ export function TaskProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   useEffect(() => {
-    if (!loaded) return;
+    if (!loaded || loadFailedRef.current) return;
     storage.setJSON(STORAGE_KEY, tasks).catch((error) =>
       console.warn("Failed to save tasks", error),
     );
   }, [tasks, loaded]);
 
   useEffect(() => {
-    if (!loaded) return;
+    if (!loaded || loadFailedRef.current) return;
 
     const subscription = AppState.addEventListener("change", (state) => {
       if (state !== "active") {
@@ -94,12 +147,17 @@ export function TaskProvider({ children }: { children: React.ReactNode }) {
     return () => subscription.remove();
   }, [loaded]);
 
-  const addTask = useCallback((t: Omit<Task, "id" | "done">) => {
-    setTasks((prev) => [
-      ...prev,
-      { ...t, id: Date.now().toString(), done: false },
-    ]);
+  const createId = useCallback(() => {
+    idCounterRef.current += 1;
+    return `${Date.now()}-${idCounterRef.current}`;
   }, []);
+
+  const addTask = useCallback(
+    (t: Omit<Task, "id" | "done">) => {
+      setTasks((prev) => [...prev, { ...t, id: createId(), done: false }]);
+    },
+    [createId],
+  );
 
   const toggleDone = useCallback((id: string) => {
     setTasks((prev) =>
@@ -130,6 +188,12 @@ export function TaskProvider({ children }: { children: React.ReactNode }) {
     );
   }, []);
 
+  const resetTasks = useCallback(() => {
+    setTasks([]);
+    tasksRef.current = [];
+    loadFailedRef.current = false;
+  }, []);
+
   // Keep the context value stable unless tasks or an action actually changes.
   const value = useMemo(
     () => ({
@@ -139,8 +203,17 @@ export function TaskProvider({ children }: { children: React.ReactNode }) {
       editTask,
       deleteTask,
       updateTaskNote,
+      resetTasks,
     }),
-    [tasks, addTask, toggleDone, editTask, deleteTask, updateTaskNote],
+    [
+      tasks,
+      addTask,
+      toggleDone,
+      editTask,
+      deleteTask,
+      updateTaskNote,
+      resetTasks,
+    ],
   );
 
   return (

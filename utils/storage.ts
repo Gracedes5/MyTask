@@ -15,6 +15,7 @@ export const StorageKeys = {
   
   // Auth & User
   IS_LOGGED_IN: `${KEY_PREFIX}is_logged_in`,
+  ACCOUNTS: `${KEY_PREFIX}accounts`,
   PROFILE_NAME: `${KEY_PREFIX}profile_name`,
   PROFILE_USERNAME: `${KEY_PREFIX}profile_username`,
   PROFILE_EMAIL: `${KEY_PREFIX}profile_email`,
@@ -110,13 +111,16 @@ export const storage = {
   /**
    * Get multiple items from storage
    */
-  async multiGet(keys: string[]): Promise<[[string, string | null][], boolean]> {
+  async multiGet(
+    keys: readonly string[],
+  ): Promise<[readonly (readonly [string, string | null])[], boolean]> {
     try {
       const result = await AsyncStorage.multiGet(keys);
       return [result, true];
     } catch (error) {
       console.warn(`Failed to get multiple items:`, error);
-      return [keys.map((k) => [k, null]), false];
+      const fallback = keys.map((k): [string, string | null] => [k, null]);
+      return [fallback, false];
     }
   },
 
@@ -129,6 +133,27 @@ export const storage = {
       return true;
     } catch (error) {
       console.warn(`Failed to set multiple items:`, error);
+      return false;
+    }
+  },
+
+  /**
+   * Clear the current session while keeping local accounts and the theme
+   * preference so the next login can restore the user's profile.
+   */
+  async clearSession(): Promise<boolean> {
+    try {
+      const preserved = new Set<string>([
+        StorageKeys.ACCOUNTS,
+        StorageKeys.DARK_MODE,
+      ]);
+      const keys = Object.values(StorageKeys).filter(
+        (key) => !preserved.has(key),
+      );
+      await AsyncStorage.multiRemove(keys);
+      return true;
+    } catch (error) {
+      console.warn(`Failed to clear session:`, error);
       return false;
     }
   },

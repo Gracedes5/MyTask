@@ -13,7 +13,7 @@ const TITLE = "Taskly";
 const INTERVAL = 120;
 
 export default function SplashScreen() {
-  const { colors, isDark } = useTheme();
+  const { colors } = useTheme();
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const pulseAnim = useRef(new Animated.Value(1)).current;
   const [typeIndex, setTypeIndex] = useState(0);
@@ -48,9 +48,9 @@ export default function SplashScreen() {
     const timer = setTimeout(async () => {
       const loggedIn = await storage.getItem(StorageKeys.IS_LOGGED_IN);
       if (loggedIn === "true") {
-        navigation.replace("Tabs", {} as any);
+        navigation.replace("Tabs", { screen: "Today" });
       } else {
-        navigation.replace("Welcome", {} as any);
+        navigation.replace("Welcome");
       }
     }, 2000);
     return () => {

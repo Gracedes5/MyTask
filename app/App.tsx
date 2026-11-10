@@ -22,10 +22,11 @@ import {
 
 import { TaskProvider, useTasks } from "./context/TaskContext";
 import { ThemeProvider, useTheme } from "./context/ThemeContext";
+import { ProfileProvider, useProfile } from "./context/ProfileContext";
 import { ToastProvider } from "./context/ToastContext";
 import { AppStyles as s } from "../constants/styles";
-import ConfirmModal from "../components/ConfirmModal";
-import { storage, StorageKeys } from "../utils/storage";
+import { storage } from "../utils/storage";
+import { saveAccount } from "../utils/accounts";
 
 import AddTaskScreen from "./screens/AddTaskScreen";
 import CreateAccountScreen from "./auth/CreateAccountScreen";
@@ -41,8 +42,9 @@ const Stack = createNativeStackNavigator<RootStackParamList>();
 const Tab = createBottomTabNavigator<TabParamList>();
 
 function Tabs() {
-  const { tasks, deleteTask } = useTasks();
+  const { tasks, deleteTask, resetTasks } = useTasks();
   const { colors, isDark, toggleDarkMode } = useTheme();
+  const { profile, setProfileImage, resetProfile } = useProfile();
   const route = useRoute();
   const rootNavigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
@@ -66,24 +68,6 @@ function Tabs() {
   const [summaryEnabled, setSummaryEnabled] = useState(false);
   const [aboutExpanded, setAboutExpanded] = useState(false);
 
-  const [profileImage, setProfileImage] = useState<string | null>(null);
-  const [profileName, setProfileName] = useState("User");
-  const [profileUsername, setProfileUsername] = useState("");
-
-  useEffect(() => {
-    storage
-      .multiGet([
-        StorageKeys.PROFILE_IMAGE,
-        StorageKeys.PROFILE_NAME,
-        StorageKeys.PROFILE_USERNAME,
-      ])
-      .then(([[, img], [, name], [, uname]]) => {
-        if (img) setProfileImage(img);
-        if (name) setProfileName(name);
-        if (uname) setProfileUsername(uname);
-      });
-  }, []);
-
   const pickImage = useCallback(async () => {
     const perm = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (!perm.granted) return;
@@ -93,17 +77,30 @@ function Tabs() {
       quality: 0.8,
     });
     if (!result.canceled && result.assets[0]?.uri) {
-      const uri = result.assets[0].uri;
-      setProfileImage(uri);
-      await storage.setItem(StorageKeys.PROFILE_IMAGE, uri);
+      await setProfileImage(result.assets[0].uri);
     }
-  }, []);
+  }, [setProfileImage]);
 
   const handleLogout = useCallback(async () => {
     setSettingsVisible(false);
-    await storage.clearAll();
+    setProfileOpen(false);
+
+    if (profile.username.trim()) {
+      await saveAccount({
+        name: profile.name,
+        username: profile.username,
+        email: profile.email,
+      });
+    }
+
+    await storage.clearSession();
+    resetTasks();
+    resetProfile();
     rootNavigation.replace("Welcome");
-  }, [rootNavigation]);
+  }, [profile, resetProfile, resetTasks, rootNavigation]);
+
+  const profileDisplayName =
+    profile.name.trim() || profile.username.trim() || "User";
 
   return (
     <>
@@ -117,8 +114,8 @@ function Tabs() {
           style={s.profileBtn}
           activeOpacity={0.7}
         >
-          {profileImage ? (
-            <Image source={{ uri: profileImage }} style={s.profileBtnImg} />
+          {profile.image ? (
+            <Image source={{ uri: profile.image }} style={s.profileBtnImg} />
           ) : (
             <Ionicons
               name="person-circle-outline"
@@ -197,9 +194,9 @@ function Tabs() {
                     { backgroundColor: colors.highlight },
                   ]}
                 >
-                  {profileImage ? (
+                  {profile.image ? (
                     <Image
-                      source={{ uri: profileImage }}
+                      source={{ uri: profile.image }}
                       style={s.profileAvatarImg}
                     />
                   ) : (
@@ -218,13 +215,11 @@ function Tabs() {
             </View>
 
             <Text style={[s.profileName, { color: colors.text }]}>
-              {profileName === "User" && profileUsername
-                ? profileUsername
-                : profileName}
+              {profileDisplayName}
             </Text>
-            {profileUsername && profileName !== "User" ? (
+            {profile.username && profile.name.trim() ? (
               <Text style={[s.profileJoin, { color: colors.muted }]}>
-                @{profileUsername}
+                @{profile.username}
               </Text>
             ) : null}
 
@@ -458,26 +453,28 @@ function Tabs() {
 export default function App() {
   return (
     <ThemeProvider>
-      <ToastProvider>
-        <TaskProvider>
-          <NavigationContainer>
-            <Stack.Navigator
-              initialRouteName="Welcome"
-              screenOptions={{ headerShown: false }}
-            >
-              <Stack.Screen name="Welcome" component={WelcomeScreen} />
-              <Stack.Screen name="Splash" component={SplashScreen} />
-              <Stack.Screen name="Login" component={LoginScreen} />
-              <Stack.Screen
-                name="CreateAccount"
-                component={CreateAccountScreen}
-              />
-              <Stack.Screen name="Tabs" component={Tabs} />
-              <Stack.Screen name="AddTask" component={AddTaskScreen} />
-            </Stack.Navigator>
-          </NavigationContainer>
-        </TaskProvider>
-      </ToastProvider>
+      <ProfileProvider>
+        <ToastProvider>
+          <TaskProvider>
+            <NavigationContainer>
+              <Stack.Navigator
+                initialRouteName="Splash"
+                screenOptions={{ headerShown: false }}
+              >
+                <Stack.Screen name="Welcome" component={WelcomeScreen} />
+                <Stack.Screen name="Splash" component={SplashScreen} />
+                <Stack.Screen name="Login" component={LoginScreen} />
+                <Stack.Screen
+                  name="CreateAccount"
+                  component={CreateAccountScreen}
+                />
+                <Stack.Screen name="Tabs" component={Tabs} />
+                <Stack.Screen name="AddTask" component={AddTaskScreen} />
+              </Stack.Navigator>
+            </NavigationContainer>
+          </TaskProvider>
+        </ToastProvider>
+      </ProfileProvider>
     </ThemeProvider>
   );
 }

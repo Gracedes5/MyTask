@@ -4,7 +4,7 @@ import { Dimensions, View } from "react-native";
 import { IconBackgroundStyles as s } from "../constants/styles";
 import { useTheme } from "../app/context/ThemeContext";
 
-const { width, height } = Dimensions.get("window");
+const { height } = Dimensions.get("window");
 
 const iconList = [
   { name: "checkmark-done", size: 44 },

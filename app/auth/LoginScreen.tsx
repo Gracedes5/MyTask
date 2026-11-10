@@ -15,11 +15,16 @@ import {
 import { LoginScreenStyles as s } from "../../constants/styles";
 import { validateLogin } from "../../utils/validation";
 import { useTheme } from "../context/ThemeContext";
+import { useProfile } from "../context/ProfileContext";
+import { useToast } from "../context/ToastContext";
 import type { RootStackParamList } from "../types";
 import { storage, StorageKeys } from "../../utils/storage";
+import { findAccount } from "../../utils/accounts";
 
 export default function LoginScreen() {
   const { colors, isDark } = useTheme();
+  const { reloadProfile } = useProfile();
+  const toast = useToast();
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
 
   const [username, setUsername] = useState("");
@@ -33,7 +38,7 @@ export default function LoginScreen() {
     const result = validateLogin({ username, password });
     if (!result.ok) {
       const err: Record<string, string> = {};
-      (Object.keys(result.errors) as Array<keyof typeof result.errors>).forEach((k) => {
+      (Object.keys(result.errors) as (keyof typeof result.errors)[]).forEach((k) => {
         const v = result.errors[k];
         if (typeof v === "string" && v.length > 0) {
           err[k as string] = v;
@@ -46,10 +51,31 @@ export default function LoginScreen() {
       }
       return;
     }
-    await storage.multiSet([
+    const account = await findAccount(result.trimmed.username);
+    const pairs: [string, string][] = [
       [StorageKeys.IS_LOGGED_IN, "true"],
-      [StorageKeys.PROFILE_USERNAME, result.trimmed.username],
-    ]);
+      [
+        StorageKeys.PROFILE_USERNAME,
+        account?.username ?? result.trimmed.username,
+      ],
+    ];
+
+    if (account) {
+      pairs.push(
+        [StorageKeys.PROFILE_NAME, account.name],
+        [StorageKeys.PROFILE_EMAIL, account.email],
+      );
+    }
+
+    await storage.removeItem(StorageKeys.PROFILE_IMAGE);
+    await storage.multiSet(pairs);
+    if (!account) {
+      await storage.multiRemove([
+        StorageKeys.PROFILE_NAME,
+        StorageKeys.PROFILE_EMAIL,
+      ]);
+    }
+    await reloadProfile();
     navigation.replace("Splash");
   };
 
@@ -178,7 +204,12 @@ export default function LoginScreen() {
 
         <TouchableOpacity
           style={[s.googleBtn, { backgroundColor: colors.card, borderColor: colors.border }]}
-          onPress={() => {}}
+          onPress={() =>
+            toast.info(
+              "Google Sign-In",
+              "Google sign-in is not available yet. Please use your username and password.",
+            )
+          }
           activeOpacity={0.8}
         >
           <Ionicons name="logo-google" size={18} color={colors.text} />
