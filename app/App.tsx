@@ -11,7 +11,6 @@ import * as ImagePicker from "expo-image-picker";
 import { StatusBar } from "expo-status-bar";
 import React, { useCallback, useEffect, useState } from "react";
 import {
-  Alert,
   Image,
   Modal,
   SafeAreaView,
@@ -25,6 +24,7 @@ import { ThemeProvider, useTheme } from "./context/ThemeContext";
 import { ProfileProvider, useProfile } from "./context/ProfileContext";
 import { ToastProvider } from "./context/ToastContext";
 import { AppStyles as s } from "../constants/styles";
+import ConfirmModal from "../components/ConfirmModal";
 import { storage } from "../utils/storage";
 import { saveAccount } from "../utils/accounts";
 
@@ -63,6 +63,7 @@ function Tabs() {
 
   const [profileOpen, setProfileOpen] = useState(false);
   const [settingsVisible, setSettingsVisible] = useState(false);
+  const [logoutConfirmVisible, setLogoutConfirmVisible] = useState(false);
   const [notifEnabled, setNotifEnabled] = useState(true);
   const [reminderEnabled, setReminderEnabled] = useState(true);
   const [summaryEnabled, setSummaryEnabled] = useState(false);
@@ -423,14 +424,8 @@ function Tabs() {
             <TouchableOpacity
               style={s.settingsRow}
               onPress={() => {
-                Alert.alert("Logout", "Are you sure you want to logout?", [
-                  { text: "Cancel", style: "cancel" },
-                  {
-                    text: "Logout",
-                    style: "destructive",
-                    onPress: handleLogout,
-                  },
-                ]);
+                setSettingsVisible(false);
+                setLogoutConfirmVisible(true);
               }}
               activeOpacity={0.7}
             >
@@ -446,6 +441,20 @@ function Tabs() {
           </SafeAreaView>
         </TouchableOpacity>
       </Modal>
+
+      <ConfirmModal
+        visible={logoutConfirmVisible}
+        title="Logout"
+        message="Are you sure you want to logout?"
+        confirmText="Logout"
+        cancelText="Cancel"
+        destructive
+        onConfirm={() => {
+          setLogoutConfirmVisible(false);
+          handleLogout();
+        }}
+        onCancel={() => setLogoutConfirmVisible(false)}
+      />
     </>
   );
 }

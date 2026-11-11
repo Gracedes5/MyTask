@@ -43,6 +43,52 @@ function formatTime(date: Date) {
   return date.toLocaleTimeString(undefined, { hour: "2-digit", minute: "2-digit" });
 }
 
+const WebInput = "input" as unknown as React.ComponentType<any>;
+
+function toDateInputValue(date: Date): string {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
+
+function toTimeInputValue(date: Date): string {
+  return `${String(date.getHours()).padStart(2, "0")}:${String(
+    date.getMinutes(),
+  ).padStart(2, "0")}`;
+}
+
+function parseDateInputValue(value: string, current: Date): Date | null {
+  const match = value.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  if (!match) return null;
+  const next = new Date(current);
+  next.setFullYear(
+    parseInt(match[1], 10),
+    parseInt(match[2], 10) - 1,
+    parseInt(match[3], 10),
+  );
+  return next;
+}
+
+function parseTimeInputValue(value: string, current: Date): Date | null {
+  const match = value.match(/^(\d{2}):(\d{2})$/);
+  if (!match) return null;
+  const next = new Date(current);
+  next.setHours(parseInt(match[1], 10), parseInt(match[2], 10));
+  return next;
+}
+
+const webInputStyle = (color: string) => ({
+  flex: 1,
+  minWidth: 0,
+  border: "none",
+  outline: "none",
+  background: "transparent",
+  color,
+  fontSize: 14,
+  fontFamily: "inherit",
+});
+
 export default function AddTaskScreen() {
   const insets = useSafeAreaInsets();
   const navigation = useNavigation<Nav>();
@@ -199,36 +245,137 @@ export default function AddTaskScreen() {
             ]}
           >
             <Text style={[s.lbl, { color: colors.muted }]}>SCHEDULE</Text>
-            <TouchableOpacity
-              style={[
-                s.timeRow,
-                { backgroundColor: colors.bg, borderColor: colors.border, marginBottom: 10 },
-              ]}
-              onPress={() => setShowDatePicker(true)}
-              activeOpacity={0.8}
-              disabled={saved}
-            >
-              <Ionicons name="calendar-outline" size={17} color={colors.primary} />
-              <Text style={[s.timeTxt, { color: colors.text }]}>
-                {formatDate(selectedDate)}
-              </Text>
-              <Ionicons name="chevron-forward" size={15} color={colors.muted} />
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={[
-                s.timeRow,
-                { backgroundColor: colors.bg, borderColor: colors.border },
-              ]}
-              onPress={() => setShowTimePicker(true)}
-              activeOpacity={0.8}
-              disabled={saved}
-            >
-              <Ionicons name="time-outline" size={17} color={timeSet ? colors.primary : colors.muted} />
-              <Text style={[s.timeTxt, { color: timeSet ? colors.text : colors.muted }]}>
-                {timeSet ? formatTime(selectedDate) : "Pick a time (optional)"}
-              </Text>
-              <Ionicons name="chevron-forward" size={15} color={colors.muted} />
-            </TouchableOpacity>
+            {Platform.OS === "web" ? (
+              <View
+                style={[
+                  s.timeRow,
+                  {
+                    backgroundColor: colors.bg,
+                    borderColor: colors.border,
+                    marginBottom: 10,
+                  },
+                ]}
+              >
+                <Ionicons
+                  name="calendar-outline"
+                  size={17}
+                  color={colors.primary}
+                />
+                <WebInput
+                  type="date"
+                  value={toDateInputValue(selectedDate)}
+                  onChange={(event: any) => {
+                    const next = parseDateInputValue(
+                      event.target.value,
+                      selectedDate,
+                    );
+                    if (next) setSelectedDate(next);
+                  }}
+                  style={webInputStyle(colors.text)}
+                  disabled={saved}
+                />
+              </View>
+            ) : (
+              <TouchableOpacity
+                style={[
+                  s.timeRow,
+                  {
+                    backgroundColor: colors.bg,
+                    borderColor: colors.border,
+                    marginBottom: 10,
+                  },
+                ]}
+                onPress={() => setShowDatePicker(true)}
+                activeOpacity={0.8}
+                disabled={saved}
+              >
+                <Ionicons
+                  name="calendar-outline"
+                  size={17}
+                  color={colors.primary}
+                />
+                <Text style={[s.timeTxt, { color: colors.text }]}>
+                  {formatDate(selectedDate)}
+                </Text>
+                <Ionicons
+                  name="chevron-forward"
+                  size={15}
+                  color={colors.muted}
+                />
+              </TouchableOpacity>
+            )}
+            {Platform.OS === "web" ? (
+              <View
+                style={[
+                  s.timeRow,
+                  { backgroundColor: colors.bg, borderColor: colors.border },
+                ]}
+              >
+                <Ionicons
+                  name="time-outline"
+                  size={17}
+                  color={timeSet ? colors.primary : colors.muted}
+                />
+                <WebInput
+                  type="time"
+                  value={timeSet ? toTimeInputValue(selectedDate) : ""}
+                  onChange={(event: any) => {
+                    if (!event.target.value) {
+                      setTimeSet(false);
+                      return;
+                    }
+                    const next = parseTimeInputValue(
+                      event.target.value,
+                      selectedDate,
+                    );
+                    if (next) {
+                      setSelectedDate(next);
+                      setTimeSet(true);
+                    }
+                  }}
+                  style={webInputStyle(timeSet ? colors.text : colors.muted)}
+                  disabled={saved}
+                />
+                {timeSet ? (
+                  <TouchableOpacity onPress={() => setTimeSet(false)}>
+                    <Ionicons
+                      name="close-circle"
+                      size={16}
+                      color={colors.muted}
+                    />
+                  </TouchableOpacity>
+                ) : null}
+              </View>
+            ) : (
+              <TouchableOpacity
+                style={[
+                  s.timeRow,
+                  { backgroundColor: colors.bg, borderColor: colors.border },
+                ]}
+                onPress={() => setShowTimePicker(true)}
+                activeOpacity={0.8}
+                disabled={saved}
+              >
+                <Ionicons
+                  name="time-outline"
+                  size={17}
+                  color={timeSet ? colors.primary : colors.muted}
+                />
+                <Text
+                  style={[
+                    s.timeTxt,
+                    { color: timeSet ? colors.text : colors.muted },
+                  ]}
+                >
+                  {timeSet ? formatTime(selectedDate) : "Pick a time (optional)"}
+                </Text>
+                <Ionicons
+                  name="chevron-forward"
+                  size={15}
+                  color={colors.muted}
+                />
+              </TouchableOpacity>
+            )}
           </View>
 
           {showDatePicker && (
